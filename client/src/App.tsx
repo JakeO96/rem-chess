@@ -5,8 +5,9 @@ import {
   Routes
 } from 'react-router-dom';
 
-import { LoginPage } from './pages/LoginPage'
+import { LogInPage } from './pages/LogInPage'
 import HomePage from './pages/HomePage';
+import { CreateAccountPage } from './pages/CreateAccountPage'
 import ExpressAPI from './api/express-api';
 
 const expressApi = new ExpressAPI();
@@ -17,7 +18,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path='/' element={<HomePage />} />
-        <Route path='login' element={<LoginPage expressApi={expressApi} />} />
+        <Route path='login' element={<LogInPage expressApi={expressApi} />} />
+        <Route path='create-account' element={<CreateAccountPage expressApi={expressApi} />} />
       </Routes>
     </BrowserRouter>
   );

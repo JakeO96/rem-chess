@@ -1,9 +1,8 @@
 import express from "express";
 
-const router = express.Router();
+const { createUser } = require("../controllers/authController")
+const authRouter = express.Router();
 
-router.route("/").get((req, res) => {
-  res.status(200).json({ working: true });
-});
+authRouter.route("/create-user").post(createUser);
 
-module.exports = router; 
+module.exports = authRouter; 

@@ -1,7 +1,20 @@
 export default class ExpressAPI {
-  doesUsernameExist = async (): Promise<Response> => {
-    const response = await fetch('http://localhost:3001/api/auth', {
-      method: 'get',
+  createUser = async (data: Object): Promise<Response> => {
+    const response = await fetch('http://localhost:3001/auth/create-user', {
+      method: 'post',
+      body: JSON.stringify(data),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+    })
+    return this.checkStatus(response)
+  }
+
+  logUserIn = async (data: object): Promise<Response> => {
+    const response = await fetch('http://localhost:3001/auth/login', {
+      method: 'post',
+      body: JSON.stringify(data),
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -10,7 +23,19 @@ export default class ExpressAPI {
     return this.checkStatus(response)
   }
 
-  doesUsernameExist2 = async (data: String): Promise<Response> => {
+  doesEmailExist = async (data: String): Promise<Response> => {
+    const response = await fetch('http://localhost:3001/auth/does-email-exist', {
+      method: 'post',
+      body: JSON.stringify(data),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      }
+    })
+    return this.checkStatus(response)
+  }
+
+  doesUsernameExist = async (data: String): Promise<Response> => {
     const response = await fetch('http://localhost:3001/auth/does-username-exist', {
       method: 'get',
       body: JSON.stringify(data),
