@@ -4,7 +4,7 @@ import ExpressAPI from '../api/express-api';
 import Cookies from 'js-cookie';
 import isEmail from 'validator/lib/isEmail'
 
-import FormField from './FormField';
+import { ValidateFormField } from './FormFields';
 
 type Field = {
   email: string;
@@ -88,11 +88,11 @@ export const LogInForm: React.FC<LogInFormProps> = ({ expressApi }) => {
               styles: "input[type='password']",
               onChange: onInputChange,
               value: fields.password,
-              validate: (_: string) => undefined,
+              validate: (_: string) => undefined, // TODO add password validation
             }
           ].map((attrs) => (
             <div key={attrs.name} className="p-1 flex justify-center w-full col-full border-0 px-0">
-              <FormField 
+              <ValidateFormField 
                 type={attrs.type} 
                 name={attrs.name} 
                 placeholder={attrs.placeholder} 

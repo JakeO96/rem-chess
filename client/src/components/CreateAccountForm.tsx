@@ -1,9 +1,8 @@
 import isEmail from 'validator/lib/isEmail';
 import React, { useState } from 'react';
 import { Navigate, Link } from 'react-router-dom';
-import FormField from './FormField';
+import { ValidateFormField, ServerConnectedFormField } from './FormFields';
 import ExpressAPI from '../api/express-api';
-import ServerConnectedFormField from './ServerConnectedFormField';
 
 type Fields = {
   username: string;
@@ -121,7 +120,7 @@ export const CreateAccountForm: React.FC<CreateAccountFormProps> = ({ expressApi
               </div> 
             :
               <div key={attrs.name} className="p-1 flex justify-center w-full col-full border-0 px-0">
-                <FormField 
+                <ValidateFormField 
                   type={attrs.type} 
                   name={attrs.name} 
                   placeholder={attrs.placeholder} 

@@ -1,4 +1,5 @@
 import React, { ReactNode } from 'react';
+import Header from './MainHeader';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -7,6 +8,7 @@ interface MainLayoutProps {
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <div className="max-w-[1920px] mx-auto bg-noct-black min-h-screen">
+      <Header />
       {children}
     </div>
   );

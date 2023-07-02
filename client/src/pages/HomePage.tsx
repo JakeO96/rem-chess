@@ -1,6 +1,9 @@
+import React from "react";
+import MainLayout from "../components/MainLayout";
+
 export default function HomePage() {
   return (
-    <div>
+    <MainLayout>
       <header>
         <h1>
           TO LOGIN
@@ -13,6 +16,6 @@ export default function HomePage() {
           Log In
         </a>
       </header>
-    </div>
+    </MainLayout>
   );
 }
