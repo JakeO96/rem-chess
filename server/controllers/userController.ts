@@ -1,31 +1,69 @@
 import { Request, Response } from 'express';
-
-//@desc Check if a username exists
-//@route POST /api/userServices/does-username-exist:id
-//@access public
-const checkUsername = (req: Request, res: Response) => {
-  res.status(200).json({ working: `Get/Check if user exists ${req.params.id}` });
-}
+import { constants } from '../constants';
+import asyncHandler from 'express-async-handler';
+import User from "../models/userModel";
 
 //@desc Get a single User record
-//@route GET /api/userServices/:id
+//@route GET /api/user/:id
 //@access public
-const getUser = (req: Request, res: Response) => {
-  res.status(200).json({ working: `Get if user exists ${req.params.id}` });
-}
+const getAllUsers = asyncHandler( async (req: Request, res: Response) => {
+  const users = await User.find({});
+  if (users) {
+    res.status(constants.SUCCESS).json(users);
+  }
+  else {
+    res.status(constants.NOT_FOUND);
+    throw new Error("User not found");
+  }
+});
+
+//@desc Get a single User record
+//@route GET /api/user/:id
+//@access public
+const getUser = asyncHandler( async (req: Request, res: Response) => {
+  const user = await User.findById(req.params.id);
+  if(user) {
+    res.status(constants.SUCCESS).json(user);
+  } 
+  else {
+    res.status(constants.NOT_FOUND);
+    throw new Error("User not found");
+  }
+});
 
 //@desc Update a User record
-//@route PUT /api/userServices/update-user:id
+//@route PUT /api/user/:id
 //@access public
-const updateUser = (req: Request, res: Response) => {
-  res.status(200).json({ working: `Update User ${req.params.id}`});
-}
+const updateUser = asyncHandler( async (req: Request, res: Response) => {
+  const user = await User.findById(req.params.id);
+
+  if(user) {
+    res.status(constants.SUCCESS).json(await User.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    ));
+  }
+  else {
+    res.status(constants.NOT_FOUND);
+    throw new Error("User not found");
+  }
+});
 
 //@desc Delete a User record
-//@route DELETE /api/userServices/delete-user:id
+//@route DELETE /api/user/:id
 //@access public
-const deleteUser = (req: Request, res: Response) => {
-  res.status(200).json({ working: `Delete User ${req.params.id}`});
-}
+const deleteUser = asyncHandler( async (req: Request, res: Response) => {
+  const user = await User.findById(req.params.id);
 
-module.exports = { checkUsername, getUser, updateUser, deleteUser };
+  if (user){
+    await User.deleteOne({_id: req.params.id});
+    res.status(constants.SUCCESS).json({message: "User successfully deleted"});
+  }
+  else {
+    res.status(constants.NOT_FOUND);
+    throw new Error("User not found");
+  }
+});
+
+module.exports = { getAllUsers, getUser, updateUser, deleteUser };
