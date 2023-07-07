@@ -1,10 +1,13 @@
 import mongoose from "mongoose";
 import { Document } from "mongoose";
 
-interface IUser extends Document {
-  name: string;
+export interface IUser extends Document {
   email: string;
+  username: string;
   password: string;
+}
+export interface ActiveUser extends IUser {
+  id?: object | string
 }
 
 const userSchema = new mongoose.Schema(
@@ -12,6 +15,7 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: [true, "add email"],
+      unique: [true, "email already in use"]
     },
     username: {
       type: String,
