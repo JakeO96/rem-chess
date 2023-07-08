@@ -47,7 +47,7 @@ const getAllGames = asyncHandler( async (req: RequestWithUser, res: Response) =>
 })
 
 //@desc Get a single Game record
-//@route GET /api/user/:id
+//@route GET /api/game/:id
 //@access public
 const getGame = asyncHandler( async (req: Request, res: Response) => {
   const game = await Game.findById(req.params.id);
@@ -61,7 +61,7 @@ const getGame = asyncHandler( async (req: Request, res: Response) => {
 });
 
 //@desc Delete a Game record
-//@route DELETE /api/user/:id
+//@route DELETE /api/game/:id
 //@access privtae
 const deleteGame = asyncHandler( async (req: RequestWithUser, res: Response) => {
   const game= await Game.findById(req.params.id);

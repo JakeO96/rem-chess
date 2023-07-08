@@ -48,7 +48,7 @@ const updateUser = asyncHandler( async (req: Request, res: Response) => {
       console.log(`In updateUser, the new hashed password is ${hashedUpdatedPassword}`);
       const updatedUser = await User.findByIdAndUpdate(
         user._id,
-        {email, username, hashedUpdatedPassword},
+        {email, username, password: hashedUpdatedPassword},
         { new: true }
       )
       if(updatedUser) {
