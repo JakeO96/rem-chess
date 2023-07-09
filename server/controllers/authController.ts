@@ -36,7 +36,6 @@ const createUser = asyncHandler(async (req: Request, res: Response) => {
       password: hashedPassword,
     });
     await user.save();
-    console.log(`In createUser, hashedPassword is ${hashedPassword}, password is ${password}`)
     res.status(constants.RECORD_CREATED).json({id: user._id, email: user.email, username: user.username});
   } catch (error) {
     res.status(constants.SERVER_ERROR);

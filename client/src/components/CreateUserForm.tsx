@@ -20,11 +20,11 @@ type InputObject = {
   error?: string,
 }
 
-interface CreateAccountFormProps {
+interface CreateUserFormProps {
   expressApi: ExpressAPI;
 }
 
-export const CreateAccountForm: React.FC<CreateAccountFormProps> = ({ expressApi }) => {
+export const CreateUserForm: React.FC<CreateUserFormProps> = ({ expressApi }) => {
   const [fields, setFields] = useState<Fields>({ username: '', password: '', email: '' });
   const [fieldErrors, setFieldErrors] = useState<Errors>({});
   const [_saveStatus, setSaveStatus] = useState<string>('READY');
@@ -47,7 +47,6 @@ export const CreateAccountForm: React.FC<CreateAccountFormProps> = ({ expressApi
     if (missingRequiredFields()) return;
 
     setSaveStatus('SAVING');
-
     expressApi.createUser(fields)
       .then(res => res.json())
       .then((data) => {
@@ -79,7 +78,7 @@ export const CreateAccountForm: React.FC<CreateAccountFormProps> = ({ expressApi
             onChange: onInputChange,
             value: fields.email,
             validate: (val: string) => isEmail(val) ? undefined : "Enter an e-mail address",
-            serverFunction: expressApi.doesEmailExist,
+            serverFunction: expressApi.emailExists,
             required: true,
           },
           {
@@ -90,7 +89,7 @@ export const CreateAccountForm: React.FC<CreateAccountFormProps> = ({ expressApi
             onChange: onInputChange,
             value: fields.username,
             validate: (_: string) => undefined,
-            serverFunction: expressApi.doesUsernameExist,
+            serverFunction: expressApi.usernameExists,
             required: true,
           },
           {

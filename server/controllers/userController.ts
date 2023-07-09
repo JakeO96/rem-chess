@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import e, { Request, Response } from 'express';
 import { constants } from '../constants';
 import asyncHandler from 'express-async-handler';
 import User from "../models/userModel";
@@ -7,7 +7,7 @@ import bcrypt from 'bcrypt';
 //@desc Get a single User record
 //@route GET /api/user/:id
 //@access public
-const getAllUsers = asyncHandler( async (req: Request, res: Response) => {
+export const getAllUsers = asyncHandler( async (req: Request, res: Response) => {
   const users = await User.find({});
   if (users) {
     res.status(constants.SUCCESS).json(users);
@@ -18,10 +18,10 @@ const getAllUsers = asyncHandler( async (req: Request, res: Response) => {
   }
 });
 
-//@desc Get a single User record
+//@desc Get a single User record by id
 //@route GET /api/user/:id
 //@access public
-const getUser = asyncHandler( async (req: Request, res: Response) => {
+export const getUser = asyncHandler( async (req: Request, res: Response) => {
   const user = await User.findById(req.params.id);
   if(user) {
     res.status(constants.SUCCESS).json(user);
@@ -32,10 +32,35 @@ const getUser = asyncHandler( async (req: Request, res: Response) => {
   }
 });
 
+//@desc Check if an email exists
+//@route POST /api/user/email-exists
+//@access public
+export const emailExists = asyncHandler(async (req: Request, res: Response) => {
+  const user = await User.findOne({ email: req.body.email });
+  if (user) {
+    res.status(constants.SUCCESS).json({ exists: true });
+  } 
+  else {
+    res.status(constants.SUCCESS).json({ exists: false });
+  }
+});
+
+//@desc Check if a username exists
+//@route POST /api/user/username-exists
+//@access public
+export const usernameExists = asyncHandler(async (req: Request, res: Response) => {
+  const user = await User.findOne({ username: req.body.username });
+  if (user) {
+    res.status(constants.SUCCESS).json({ exists: true });
+  } else {
+    res.status(constants.SUCCESS).json({ exists: false });
+  }
+});
+
 //@desc Update a User record
 //@route PUT /api/user/:id
 //@access public
-const updateUser = asyncHandler( async (req: Request, res: Response) => {
+export const updateUser = asyncHandler( async (req: Request, res: Response) => {
   const { email, username, password } = req.body;
   const user = await User.findById(req.params.id);
   if (user){
@@ -73,7 +98,7 @@ const updateUser = asyncHandler( async (req: Request, res: Response) => {
 //@desc Delete a User record
 //@route DELETE /api/user/:id
 //@access public
-const deleteUser = asyncHandler( async (req: Request, res: Response) => {
+export const deleteUser = asyncHandler( async (req: Request, res: Response) => {
   const user = await User.findById(req.params.id);
 
   if (user){
@@ -85,5 +110,3 @@ const deleteUser = asyncHandler( async (req: Request, res: Response) => {
     throw new Error("User not found");
   }
 });
-
-module.exports = { getAllUsers, getUser, updateUser, deleteUser };

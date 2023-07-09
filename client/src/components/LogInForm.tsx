@@ -50,12 +50,13 @@ export const LogInForm: React.FC<LogInFormProps> = ({ expressApi }) => {
     expressApi.logUserIn(fields)
       .then((res: Response) => res.json())
       .then((data: any) => {
-        if (data.err) {
-          setSaveStatus('ERROR');
-        } else {
+        console.log(data);
+        if (data.accessToken) {
           setSaveStatus('SUCCESS');
-          console.log('in LogInForm on submit' + data.access_token);
-          Cookies.set('token', data.access_token);
+          console.log('in LogInForm on submit' + data.accessToken);
+          Cookies.set('token', data.accessToken);
+        } else {
+          setSaveStatus('ERROR');
         }
       })
       .catch((err: any) => {

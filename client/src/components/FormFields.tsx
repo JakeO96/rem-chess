@@ -158,24 +158,32 @@ const useFormField = (
     if (!serverFunction) return;
 
     const value = evt.target.value;
+    const name = evt.target.name;
     let error = validate ? validate(value) : undefined;
 
-    if (evt.target.name === 'email') {
-      const res = await fetch(serverFunction({email: value}));
-      const json = await res.json();
-      if (json.err.length) {
-        error = json.err;
-      } else {
-        error = undefined;
-      }
+    if (name === 'email' || name === 'username') {
+      await serverFunction({[name]: value})
+        .then((res: Response) => res.json())
+        .then((res: RecordCheckResponse) => {
+          if (res.exists) {
+            setValue(value);
+            error = `${name} already in use`;
+            setError(error);
+            onChange({name, value, error})
+          } else {
+            error = undefined
+            setValue(value);
+            setError(error);
+            onChange({name, value, error})
+          }
+        })
     };
-
-    setValue(value);
-    setError(error);
-    onChange({name: evt.target.name, value, error});
   };
 
   return { value, error, handleChange, handleBlur };
 };
 
+interface RecordCheckResponse {
+  exists: boolean;
+}
 export { PlainFormField, ValidateFormField, ServerConnectedFormField }

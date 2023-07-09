@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
 import { Document } from "mongoose";
 
-interface IGame extends Document {
+export interface IGame extends Document {
   player_id: string;
   opponent_id: string;
-  moves: Array<Array<string>>;
+  moves: Array<object>;
 }
 
 const gameSchema = new mongoose.Schema(

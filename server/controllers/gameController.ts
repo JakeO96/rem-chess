@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import { constants } from '../constants'
 import asyncHandler from 'express-async-handler'
 import Game from '../models/gameModel'
+import User from '../models/userModel'
 import type { ActiveUser } from '../models/userModel'
 
 interface RequestWithUser extends Request {
@@ -23,6 +24,9 @@ const createGame = asyncHandler( async (req: Request, res: Response) => {
     moves: moves,
   });
   await game.save();
+
+  await User.findByIdAndUpdate(player_id, { $push: { games: game._id } });
+  
   res.status(constants.RECORD_CREATED).json({
     game_id: game._id, 
     player_id: player_id, 
