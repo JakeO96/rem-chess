@@ -5,7 +5,7 @@ export interface IUser extends Document {
   email: string;
   username: string;
   password: string;
-  games: Array<object>;
+  games: Array<Schema.Types.ObjectId>;
 }
 export interface ActiveUser extends IUser {
   id?: object | string

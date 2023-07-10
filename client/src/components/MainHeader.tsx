@@ -31,7 +31,7 @@ export default class Header extends React.Component {
                 <NavLink to="/login" className="transition-all whitespace-nowrap text-base font-medium text-noct-teal hover:text-noct-gray"> 
                   Log In 
                 </NavLink>
-                <NavLink to="/create-account" className="ease-in duration-200 ml-8 whitespace-nowrap inline-flex items-center justify-center px-4 py-2 rounded-full text-base font-medium text-noct-white outline outline-noct-white bg-noct-black hover:bg-noct-white hover:outline-0 hover:text-noct-black"> 
+                <NavLink to="/register" className="ease-in duration-200 ml-8 whitespace-nowrap inline-flex items-center justify-center px-4 py-2 rounded-full text-base font-medium text-noct-white outline outline-noct-white bg-noct-black hover:bg-noct-white hover:outline-0 hover:text-noct-black"> 
                   Create Account 
                 </NavLink>
               </div>

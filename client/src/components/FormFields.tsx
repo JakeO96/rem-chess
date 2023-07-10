@@ -160,24 +160,23 @@ const useFormField = (
     const value = evt.target.value;
     const name = evt.target.name;
     let error = validate ? validate(value) : undefined;
-
-    if (name === 'email' || name === 'username') {
-      await serverFunction({[name]: value})
-        .then((res: Response) => res.json())
-        .then((res: RecordCheckResponse) => {
-          if (res.exists) {
-            setValue(value);
-            error = `${name} already in use`;
-            setError(error);
-            onChange({name, value, error})
-          } else {
-            error = undefined
-            setValue(value);
-            setError(error);
-            onChange({name, value, error})
-          }
-        })
-    };
+    if(!value){
+      return;
+    }
+    await serverFunction(name, value)
+      .then((res: RecordCheckResponse) => {
+        if (res.exists) {
+          setValue(value);
+          error = `${name} already in use`;
+          setError(error);
+          onChange({name, value, error})
+        } else {
+          error = undefined
+          setValue(value);
+          setError(error);
+          onChange({name, value, error})
+        }
+      })
   };
 
   return { value, error, handleChange, handleBlur };

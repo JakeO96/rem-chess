@@ -7,7 +7,7 @@ import {
 
 import {LogInPage} from './pages/LogInPage'
 import HomePage from './pages/HomePage';
-import {CreateUserPage} from './pages/CreateUserPage'
+import {RegisterPage} from './pages/RegisterPage'
 import {DashboardPage} from './pages/UserDashboardPage';
 import ExpressAPI from './api/express-api';
 
@@ -20,7 +20,7 @@ function App() {
       <Routes>
         <Route path='/' element={<HomePage />} />
         <Route path='login' element={<LogInPage expressApi={expressApi} />} />
-        <Route path='create-account' element={<CreateUserPage expressApi={expressApi} />} />
+        <Route path='register' element={<RegisterPage expressApi={expressApi} />} />
         <Route path='dashboard' element={<DashboardPage expressApi={expressApi} />} />
       </Routes>
     </BrowserRouter>

@@ -1,27 +1,22 @@
 import { Request, Response } from 'express';
-import { constants } from '../constants'
+import { HttpStatusCode } from '../constants'
 import asyncHandler from 'express-async-handler'
 import User from "../models/userModel";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import type { ActiveUser } from '../models/userModel';
-
-interface RequestWithUser extends Request {
-  user?: ActiveUser;
-}
 
 //@desc Create a User
-//@route POST /api/auth/create-user
+//@route POST /api/auth/register
 //@access public
-const createUser = asyncHandler(async (req: Request, res: Response) => {
+export const createUser = asyncHandler(async (req: Request, res: Response) => {
   const { email, username, password } = req.body;
   if ( !email || !username || !password ) {
-    res.status(constants.VALIDATION_ERROR);
+    res.status(HttpStatusCode.VALIDATION_ERROR);
     throw new Error("Missing required fields")
   }
   const userAlreadyExists = await User.findOne({ email });
   if (userAlreadyExists) {
-    res.status(constants.VALIDATION_ERROR);
+    res.status(HttpStatusCode.VALIDATION_ERROR);
     throw new Error("User already exists")
   }
 
@@ -36,9 +31,9 @@ const createUser = asyncHandler(async (req: Request, res: Response) => {
       password: hashedPassword,
     });
     await user.save();
-    res.status(constants.RECORD_CREATED).json({id: user._id, email: user.email, username: user.username});
+    res.status(HttpStatusCode.RECORD_CREATED).json({id: user._id, email: user.email, username: user.username});
   } catch (error) {
-    res.status(constants.SERVER_ERROR);
+    res.status(HttpStatusCode.SERVER_ERROR);
     throw new Error(`Problem storing password ${error}`);
   }
 });
@@ -46,10 +41,10 @@ const createUser = asyncHandler(async (req: Request, res: Response) => {
 //@desc Log a User in (authenticate)
 //@route POST /api/auth/login
 //@access public
-const login = asyncHandler(async (req: Request, res: Response) => {
+export const login = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
   if ( !email || !password ) {
-    res.status(constants.VALIDATION_ERROR);
+    res.status(HttpStatusCode.VALIDATION_ERROR);
     throw new Error("Missing required fields")
   }
 
@@ -68,21 +63,11 @@ const login = asyncHandler(async (req: Request, res: Response) => {
         secret,
         {expiresIn: "15m"}
       );
-      res.status(constants.SUCCESS).json({ accessToken })
+      res.status(HttpStatusCode.SUCCESS).json({ accessToken })
     }
     else {
-      res.status(constants.UNAUTHORIZED)
+      res.status(HttpStatusCode.UNAUTHORIZED)
       throw new Error("Email or password is not valid")
     }
   }
 });
-
-//@desc The current user's info
-//@route GET /api/auth/current-user
-//@access private
-const currentUser = asyncHandler(async (req: RequestWithUser, res: Response) => {
-  res.status(constants.SUCCESS).json(req.user); 
-
-});
-
-module.exports = { createUser, login, currentUser };

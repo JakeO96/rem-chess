@@ -1,11 +1,10 @@
 import express from "express"
 import { validateToken } from "../middleware/validateTokenHandler"
+import { createUser, login } from "../controllers/authController";
 
-const { createUser, login, currentUser } = require("../controllers/authController");
 const authRouter = express.Router();
 
-authRouter.route("/create-user").post(createUser);
+authRouter.route("/register").post(createUser);
 authRouter.route("/login").post(login);
-authRouter.get("/current-user", validateToken, currentUser);
 
-module.exports = authRouter; 
+export { authRouter }

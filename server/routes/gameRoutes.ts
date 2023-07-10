@@ -10,4 +10,4 @@ gameRouter.route("/get-all-games").get(getAllGames);
 gameRouter.route("/:id").get(getGame);
 gameRouter.route("/:id").delete(deleteGame);
 
-module.exports = gameRouter;
+export { gameRouter };

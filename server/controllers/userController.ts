@@ -1,8 +1,13 @@
-import e, { Request, Response } from 'express';
-import { constants } from '../constants';
+import { Request, Response } from 'express';
+import { HttpStatusCode } from '../constants';
 import asyncHandler from 'express-async-handler';
 import User from "../models/userModel";
 import bcrypt from 'bcrypt';
+import type { ActiveUser } from '../models/userModel';
+
+interface RequestWithUser extends Request {
+  user?: ActiveUser;
+}
 
 //@desc Get a single User record
 //@route GET /api/user/:id
@@ -10,10 +15,10 @@ import bcrypt from 'bcrypt';
 export const getAllUsers = asyncHandler( async (req: Request, res: Response) => {
   const users = await User.find({});
   if (users) {
-    res.status(constants.SUCCESS).json(users);
+    res.status(HttpStatusCode.SUCCESS).json(users);
   }
   else {
-    res.status(constants.NOT_FOUND);
+    res.status(HttpStatusCode.NOT_FOUND);
     throw new Error("User not found");
   }
 });
@@ -24,36 +29,24 @@ export const getAllUsers = asyncHandler( async (req: Request, res: Response) => 
 export const getUser = asyncHandler( async (req: Request, res: Response) => {
   const user = await User.findById(req.params.id);
   if(user) {
-    res.status(constants.SUCCESS).json(user);
+    res.status(HttpStatusCode.SUCCESS).json(user);
   } 
   else {
-    res.status(constants.NOT_FOUND);
+    res.status(HttpStatusCode.NOT_FOUND);
     throw new Error("User not found");
   }
 });
 
-//@desc Check if an email exists
-//@route POST /api/user/email-exists
+//@desc Check if a field value already exists on a user
+//@route get /api/user/exists/:fieldName/:value
 //@access public
-export const emailExists = asyncHandler(async (req: Request, res: Response) => {
-  const user = await User.findOne({ email: req.body.email });
+export const fieldExists = asyncHandler(async (req: Request, res: Response) => {
+  const user = await User.findOne({ [req.params.fieldName]: req.params.value});
   if (user) {
-    res.status(constants.SUCCESS).json({ exists: true });
+    res.status(HttpStatusCode.SUCCESS).json({ exists: true });
   } 
   else {
-    res.status(constants.SUCCESS).json({ exists: false });
-  }
-});
-
-//@desc Check if a username exists
-//@route POST /api/user/username-exists
-//@access public
-export const usernameExists = asyncHandler(async (req: Request, res: Response) => {
-  const user = await User.findOne({ username: req.body.username });
-  if (user) {
-    res.status(constants.SUCCESS).json({ exists: true });
-  } else {
-    res.status(constants.SUCCESS).json({ exists: false });
+    res.status(HttpStatusCode.SUCCESS).json({ exists: false });
   }
 });
 
@@ -77,20 +70,20 @@ export const updateUser = asyncHandler( async (req: Request, res: Response) => {
         { new: true }
       )
       if(updatedUser) {
-        res.status(constants.SUCCESS).json({id: updatedUser._id, email: updatedUser.email, username: updatedUser.username})
+        res.status(HttpStatusCode.SUCCESS).json({id: updatedUser._id, email: updatedUser.email, username: updatedUser.username})
       }
       else {
-        res.status(constants.SERVER_ERROR);
+        res.status(HttpStatusCode.SERVER_ERROR);
         throw new Error("Problem updating user");
       }
     }
     catch (error) {
-      res.status(constants.SERVER_ERROR);
+      res.status(HttpStatusCode.SERVER_ERROR);
       throw new Error(`Problem updating user: ${error}`);
     }
   }
   else{
-    res.status(constants.NOT_FOUND);
+    res.status(HttpStatusCode.NOT_FOUND);
     throw new Error("User not found");
   }
 });
@@ -103,10 +96,18 @@ export const deleteUser = asyncHandler( async (req: Request, res: Response) => {
 
   if (user){
     await User.deleteOne({_id: req.params.id});
-    res.status(constants.SUCCESS).json({message: "User successfully deleted"});
+    res.status(HttpStatusCode.SUCCESS).json({message: "User successfully deleted"});
   }
   else {
-    res.status(constants.NOT_FOUND);
+    res.status(HttpStatusCode.NOT_FOUND);
     throw new Error("User not found");
   }
+});
+
+//@desc The current user's info
+//@route GET /api/auth/current-user
+//@access private
+export const currentUser = asyncHandler(async (req: RequestWithUser, res: Response) => {
+  res.status(HttpStatusCode.SUCCESS).json(req.user); 
+
 });

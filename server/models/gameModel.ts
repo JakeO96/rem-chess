@@ -1,20 +1,26 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { Document } from "mongoose";
 
-export interface IGame extends Document {
-  player_id: string;
-  opponent_id: string;
-  moves: Array<object>;
+export interface IMove {
+  whiteMove: string;
+  blackMove: string;
 }
+
+export interface IGame extends Document {
+  playerId: Schema.Types.ObjectId;
+  opponentId: Schema.Types.ObjectId;
+  moves: IMove[];
+}
+
 
 const gameSchema = new mongoose.Schema(
   {
-    player_id: {
+    playerId: {
       type: mongoose.Schema.Types.ObjectId,
       required: [true],
       ref: "User",
     },
-    opponent_id: {
+    opponentId: {
       type: mongoose.Schema.Types.ObjectId,
       required: [true],
       ref: "User",
