@@ -1,3 +1,5 @@
+import Cookies from "js-cookie";
+
 class MyError extends Error {
   status?: string;
   response?: Response;
@@ -50,19 +52,66 @@ export default class ExpressAPI {
     return response;
   }
 
-  private makeApiCall = async (url: string, options: any): Promise<any> => {
-    try {
-      const response = await fetch(url, options);
-      if (response.status >= 200 && response.status < 300) {
-        return response.json();
-      } else {
-        const errorData = await response.json(); // This will contain the error details from your Express app
-        console.error('Error from API:', errorData);
-        throw new MyError(`HTTP Error ${response.status}: ${errorData.message}`, errorData.stackTrace, response);
+  createGame = async (data: object): Promise<Response> => {
+    const options = {
+      method: 'post',
+      body: JSON.stringify(data),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
       }
-    } catch (error) {
-      console.error('Network error:', error);
-      throw error;
     }
+    const response = await fetch('http://localhost:3001/api/game/create-game', options)
+    return response;
+  }
+
+  private makeApiCall = async (url: string, options: any): Promise<any> => {
+    // If there's a token, add it to the request
+    const token = Cookies.get('token');
+    if (token) {
+      options.headers = {
+        ...options.headers,
+        'Authorization': `Bearer ${token}`,
+      }
+    }
+    
+    const response = await fetch(url, options);
+    
+    if(response.status === 401) {
+      const errorData = await response.json();
+      if(errorData.message === 'Session has expired. Please log in again.') {
+        // Get the refresh token from the cookie
+        const refreshToken = Cookies.get('refreshToken');
+        if(refreshToken) {
+          // Request a new access token using the refresh token
+          const refreshOptions = {
+            method: 'post',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${refreshToken}`
+            }
+          }
+          const refreshResponse = await fetch('http://localhost:3001/api/auth/refresh', refreshOptions);
+          const refreshData = await refreshResponse.json();
+          if(refreshData.accessToken) {
+            // Store the new access token and refresh token in cookies
+            Cookies.set('token', refreshData.accessToken);
+            Cookies.set('refreshToken', refreshData.refreshToken);
+            // Retry the original request with the new access token
+            options.headers['Authorization'] = `Bearer ${refreshData.accessToken}`;
+            return this.makeApiCall(url, options);
+          }
+        }
+      }
+      throw new Error(errorData.message);
+    }
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message);
+    }
+    
+    return response.json();
   }
 }

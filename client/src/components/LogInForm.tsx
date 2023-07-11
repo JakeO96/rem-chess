@@ -51,10 +51,10 @@ export const LogInForm: React.FC<LogInFormProps> = ({ expressApi }) => {
       .then((res: Response) => res.json())
       .then((data: any) => {
         console.log(data);
-        if (data.accessToken) {
+        if (data.userId) {
+          console.log('in LogInForm on submit' + data.userId);
+          Cookies.set('userId', 'John Doe', { expires: 7 });
           setSaveStatus('SUCCESS');
-          console.log('in LogInForm on submit' + data.accessToken);
-          Cookies.set('token', data.accessToken);
         } else {
           setSaveStatus('ERROR');
         }

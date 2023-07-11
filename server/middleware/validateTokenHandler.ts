@@ -25,28 +25,41 @@ const extractToken = (req: RequestWithUser): string | undefined => {
 }
 
 const validateToken = asyncHandler(async (req: RequestWithUser, res: Response, next: NextFunction) => {
-  const secret = process.env.JWT_SECRET;
-  if(secret) {
-    let token: string | undefined = extractToken(req);
-    if(!token) {
+  let token: string | undefined;
+  
+  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+    try {
+      token = req.headers.authorization.split(" ")[1];
+      const secret = process.env.JWT_SECRET;
+      if(secret){
+        jwt.verify(token, secret, (err, decoded) => {     
+          if(err) {
+            if(err instanceof jwt.TokenExpiredError) {
+              res.status(HttpStatusCode.UNAUTHORIZED);
+              throw new Error("Session has expired. Please log in again.");
+            } else {
+              res.status(HttpStatusCode.UNAUTHORIZED);
+              throw new Error("User not authorized");
+            }
+          }
+          else {
+            const decodedToken = decoded as JwtPayload;
+            req.user = decodedToken.user;
+            next();
+          }
+        })
+      }
+      else {
+        res.status(HttpStatusCode.SERVER_ERROR);
+        throw new Error("There was a problem processing your request");
+      }
+    } catch (error) {
       res.status(HttpStatusCode.UNAUTHORIZED);
-      throw new Error("User not authorized")
+      throw new Error("User not authorized");
     }
-    jwt.verify(token, secret, (err, decoded) => {     
-      if(err) {
-        res.status(HttpStatusCode.UNAUTHORIZED);
-        throw new Error("User not authorized");
-      }
-      if(decoded) {
-        const payload = decoded as JwtPayload;
-        req.user = payload.user;
-        next();
-      }
-    })
-  }
-  else {
-    res.status(HttpStatusCode.SERVER_ERROR);
-    throw new Error("There was a problem processing your request");
+  } else {
+    res.status(HttpStatusCode.UNAUTHORIZED);
+    throw new Error("User not authorized");
   }
 })
 

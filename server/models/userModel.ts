@@ -6,6 +6,8 @@ export interface IUser extends Document {
   username: string;
   password: string;
   games: Array<Schema.Types.ObjectId>;
+  refreshTokens: string[];
+  invalidatedTokens: string[];
 }
 export interface ActiveUser extends IUser {
   id?: object | string
@@ -30,6 +32,12 @@ const userSchema = new mongoose.Schema(
       type: Schema.Types.ObjectId,
       ref: 'Game',
     }],
+    refreshTokens: {
+      type: [String]
+    },
+    invalidatedTokens: {
+      type: [String]
+    },
   }, 
   {
     timestamps: true,
