@@ -4,6 +4,7 @@ import asyncHandler from 'express-async-handler'
 import User from "../models/userModel";
 import bcrypt from 'bcrypt';
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import { v4 as uuidv4 } from 'uuid';
 
 //@desc Create a User
 //@route POST /api/auth/register
@@ -74,13 +75,19 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
       // Store the refresh token in the database
       user.refreshTokens.push(refreshToken);
+      const sessionId = uuidv4();
+      user.session = {
+        sessionId,
+        startTime: new Date(),
+        endTime: null,
+      };
       await user.save();
 
       // Set the JWT and refresh token in HttpOnly cookies
       res.cookie('token', accessToken, { httpOnly: true, sameSite:  "none"});
       res.cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: "none"});
 
-      res.status(HttpStatusCode.SUCCESS).json({userId: user._id});
+      res.status(HttpStatusCode.SUCCESS).json({session: {sessionId: sessionId}});
     }
     else {
       res.status(HttpStatusCode.SERVER_ERROR);
@@ -168,7 +175,7 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
 //@route POST /api/auth/logout
 //@access public
 export const logout = asyncHandler(async (req: Request, res: Response) => {
-  const token = req.cookies.token;
+  const token: string = req.cookies.token;
   
   // Get the user from the database
   const user = await User.findOne({ 'refreshTokens': token });
@@ -178,6 +185,7 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
     user.invalidatedTokens.push(token);
     // Remove the token from the refreshTokens array in the database
     user.refreshTokens = user.refreshTokens.filter(rt => rt !== token);
+    user.session.endTime = new Date();
     await user.save();
 
     // Clear the token from the cookie

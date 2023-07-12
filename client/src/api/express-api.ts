@@ -40,6 +40,30 @@ export default class ExpressAPI {
     return response;
   }
 
+  logUserOut = async (): Promise<Response> => {
+    const options = {
+      method: 'post',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      }
+    }
+    const response = await this.makeApiCall('http://localhost:3001/api/auth/logout', options);
+    return response;
+  }
+
+  getLoggedInUsers = async (): Promise<any> => {
+    const options = {
+      method: 'get',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      }
+    }
+    const response = await this.makeApiCall('http://localhost:3001/api/user/logged-in', options);
+    return response;
+  }
+
   fieldExistsInDB = async (fieldName: string, value: any): Promise<Response> => {
     const options = {
       method: 'get',

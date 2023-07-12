@@ -4,6 +4,7 @@ import asyncHandler from 'express-async-handler';
 import User from "../models/userModel";
 import bcrypt from 'bcrypt';
 import type { ActiveUser } from '../models/userModel';
+import mongoose from 'mongoose';
 
 interface RequestWithUser extends Request {
   user?: ActiveUser;
@@ -23,10 +24,29 @@ export const getAllUsers = asyncHandler( async (req: Request, res: Response) => 
   }
 });
 
+//@desc Get all currently logged in users
+//@route GET /api/user/logged-in
+//@access public
+export const getLoggedInUsers = asyncHandler(async (req: Request, res: Response) => {
+  const users = await User.find({ 'session.endTime': null });
+  if (users) {
+    res.status(HttpStatusCode.SUCCESS).json(users);
+  } 
+  else {
+    res.status(HttpStatusCode.NOT_FOUND);
+    throw new Error("No users are currently logged in");
+  }
+});
+
 //@desc Get a single User record by id
 //@route GET /api/user/:id
 //@access public
 export const getUser = asyncHandler( async (req: Request, res: Response) => {
+  const userId = req.params.id;
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    res.status(HttpStatusCode.VALIDATION_ERROR);
+    throw new Error("Invalid user ID");
+  }
   const user = await User.findById(req.params.id);
   if(user) {
     res.status(HttpStatusCode.SUCCESS).json(user);

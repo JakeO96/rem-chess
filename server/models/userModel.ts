@@ -8,6 +8,11 @@ export interface IUser extends Document {
   games: Array<Schema.Types.ObjectId>;
   refreshTokens: string[];
   invalidatedTokens: string[];
+  session: {
+    sessionId: string;
+    startTime: Date;
+    endTime: Date | null;
+  };
 }
 export interface ActiveUser extends IUser {
   id?: object | string
@@ -37,6 +42,20 @@ const userSchema = new mongoose.Schema(
     },
     invalidatedTokens: {
       type: [String]
+    },
+    session: {
+      sessionId: {
+        type: String,
+        default: null,
+      },
+      startTime: {
+        type: Date,
+        default: null,
+      },
+      endTime: {
+        type: Date,
+        default: null,
+      },
     },
   }, 
   {

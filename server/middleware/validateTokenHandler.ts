@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { HttpStatusCode } from '../constants'
 import asyncHandler from 'express-async-handler'
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import User from '../models/userModel'
 
 interface RequestWithUser extends Request {
   user?: string | object;
@@ -32,7 +33,7 @@ const validateToken = asyncHandler(async (req: RequestWithUser, res: Response, n
       token = req.headers.authorization.split(" ")[1];
       const secret = process.env.JWT_SECRET;
       if(secret){
-        jwt.verify(token, secret, (err, decoded) => {     
+        jwt.verify(token, secret, async (err, decoded) => {     
           if(err) {
             if(err instanceof jwt.TokenExpiredError) {
               res.status(HttpStatusCode.UNAUTHORIZED);
@@ -45,7 +46,15 @@ const validateToken = asyncHandler(async (req: RequestWithUser, res: Response, n
           else {
             const decodedToken = decoded as JwtPayload;
             req.user = decodedToken.user;
-            next();
+            const sessionId = req.headers.sessionId;
+            // Fetch user from database using the ID in decodedToken
+            const user = await User.findById(decodedToken.user.id);
+            if (user && user.session.sessionId === sessionId && user.session.endTime === null) {
+              next();
+            } else {
+              res.status(HttpStatusCode.UNAUTHORIZED);
+              throw new Error("Invalid session");
+            }
           }
         })
       }

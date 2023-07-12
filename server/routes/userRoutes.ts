@@ -1,5 +1,5 @@
 import express from "express";
-import { getAllUsers, getUser, fieldExists, updateUser, deleteUser, currentUser } from "../controllers/userController";
+import { getAllUsers, getUser, fieldExists, updateUser, deleteUser, currentUser, getLoggedInUsers } from "../controllers/userController";
 import { validateToken } from "../middleware/validateTokenHandler";
 
 const userRouter = express.Router();
@@ -9,5 +9,6 @@ userRouter.route("/:id").get(getUser);
 userRouter.route("/:id").put(updateUser);
 userRouter.route("/:id").delete(deleteUser);
 userRouter.get("/current-user", validateToken, currentUser);
+userRouter.get("/all-users-loggin-in", validateToken, getLoggedInUsers)
 
 export {userRouter}

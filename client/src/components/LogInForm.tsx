@@ -6,6 +6,10 @@ import isEmail from 'validator/lib/isEmail'
 
 import { ValidateFormField } from './FormFields';
 
+interface SessionObject extends Object {
+  sessionId: string;
+}
+
 type Field = {
   email: string;
   password: string;
@@ -49,11 +53,11 @@ export const LogInForm: React.FC<LogInFormProps> = ({ expressApi }) => {
 
     expressApi.logUserIn(fields)
       .then((res: Response) => res.json())
-      .then((data: any) => {
-        console.log(data);
-        if (data.userId) {
-          console.log('in LogInForm on submit' + data.userId);
-          Cookies.set('userId', 'John Doe', { expires: 7 });
+      .then((responseData: SessionObject) => {
+        console.log(responseData);
+        if (responseData.sessionId) {
+          console.log('in LogInForm on submit' + responseData.sessionId);
+          Cookies.set('sessionId', responseData.sessionId);
           setSaveStatus('SUCCESS');
         } else {
           setSaveStatus('ERROR');

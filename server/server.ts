@@ -7,6 +7,7 @@ import { errorHandler } from "./middleware/errorHandler"
 import { connectDb } from "./config/dbConnection"
 import path from 'path';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv-safe';
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use(cors({ origin: 'http://localhost:3000' }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../client/dist')));
 app.use(errorHandler);
+app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/game", gameRoutes);
