@@ -7,8 +7,8 @@ export const MainHeader: React.FC<{}> = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const token = Cookies.get('token');
-    setIsLoggedIn(!!token);
+    const sessionId = Cookies.get('sessionId');
+    setIsLoggedIn(!!sessionId);
   }, []);
 
   const handleLogout = async () => {

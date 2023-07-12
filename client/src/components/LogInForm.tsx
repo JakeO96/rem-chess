@@ -10,6 +10,10 @@ interface SessionObject extends Object {
   sessionId: string;
 }
 
+interface LogInAPIResponse {
+  session: SessionObject
+}
+
 type Field = {
   email: string;
   password: string;
@@ -53,13 +57,15 @@ export const LogInForm: React.FC<LogInFormProps> = ({ expressApi }) => {
 
     expressApi.logUserIn(fields)
       .then((res: Response) => res.json())
-      .then((responseData: SessionObject) => {
-        console.log(responseData);
-        if (responseData.sessionId) {
-          console.log('in LogInForm on submit' + responseData.sessionId);
-          Cookies.set('sessionId', responseData.sessionId);
+      .then((responseData: LogInAPIResponse) => {
+        const session: SessionObject = responseData.session;
+        const sessionId = session.sessionId;
+        if (sessionId) {
+          console.log('in LogInForm on submit' + sessionId);
+          Cookies.set('sessionId', sessionId);
           setSaveStatus('SUCCESS');
         } else {
+          console.log("Failed to create session");
           setSaveStatus('ERROR');
         }
       })
