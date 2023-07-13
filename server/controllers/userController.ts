@@ -38,11 +38,13 @@ export const getLoggedInUsers = asyncHandler(async (req: Request, res: Response)
   }
 });
 
+/** 
 //@desc Get a single User record by id
 //@route GET /api/user/:id
 //@access public
 export const getUser = asyncHandler( async (req: Request, res: Response) => {
   const userId = req.params.id;
+  console.log(`in getUser#######: userId is ${userId}`)
   if (!mongoose.Types.ObjectId.isValid(userId)) {
     res.status(HttpStatusCode.VALIDATION_ERROR);
     throw new Error("Invalid user ID");
@@ -56,6 +58,7 @@ export const getUser = asyncHandler( async (req: Request, res: Response) => {
     throw new Error("User not found");
   }
 });
+*/
 
 //@desc Check if a field value already exists on a user
 //@route get /api/user/exists/:fieldName/:value

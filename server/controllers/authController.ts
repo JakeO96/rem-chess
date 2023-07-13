@@ -48,6 +48,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   const user = await User.findOne({ email });
 
   if(user && (await bcrypt.compare(password, user.password))) {
+    console.log(user._id)
     const secret = process.env.JWT_SECRET;
     const refreshSecret = process.env.JWT_REFRESH_SECRET;
     if(secret && refreshSecret) {
