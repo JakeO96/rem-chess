@@ -62,7 +62,7 @@ export const LogInForm: React.FC<LogInFormProps> = ({ expressApi }) => {
         const sessionId = session.sessionId;
         if (sessionId) {
           console.log('in LogInForm on submit' + sessionId);
-          Cookies.set('sessionId', sessionId);
+          Cookies.set('sessionId', sessionId, {sameSite: 'none', secure: true});
           setSaveStatus('SUCCESS');
         } else {
           console.log("Failed to create session");

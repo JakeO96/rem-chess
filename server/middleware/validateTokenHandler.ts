@@ -9,21 +9,12 @@ interface RequestWithUser extends Request {
 }
 
 const extractToken = (req: RequestWithUser): string | undefined => {
-  let authHeader: string | string[] | undefined = req.headers.Authorization || req.headers.authorization;
-  console.log(`authHeader: ${authHeader}`)
-  if (typeof authHeader !== 'string') {
-    return undefined
+  let token: string | undefined = req.cookies.token;
+  console.log(`Token: ${token}`);
+  if (!token) {
+    return undefined;
   }
-  if(authHeader && authHeader.startsWith("Bearer")) {
-    let headerParts: string[] = authHeader.split(" ");
-    if (headerParts.length !== 2 || headerParts[0].toLowerCase() !== 'bearer') {
-      return undefined
-    }
-  }
-  else {
-    return undefined
-  }
-  return authHeader.split(" ")[1];
+  return token;
 }
 
 const validateToken = asyncHandler(async (req: RequestWithUser, res: Response, next: NextFunction) => {
@@ -48,7 +39,7 @@ const validateToken = asyncHandler(async (req: RequestWithUser, res: Response, n
             console.log(`decodedToken in valTokenHandler: ${decodedToken}`)
             req.user = decodedToken.user;
             console.log(`req.user in valTokenHandler: ${req.user} , decodedToken.user: ${decodedToken.user}`)
-            const sessionId = req.headers.sessionId;
+            const sessionId = decodedToken.user.sessionId;
             console.log(`sessionId in valTokenHandler: ${sessionId}`)
             // Fetch user from database using the ID in decodedToken
             const user = await User.findById(decodedToken.user.id);

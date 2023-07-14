@@ -50,7 +50,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ expressApi }) => {
     expressApi.createUser(fields)
       .then(res => res.json())
       .then((data) => {
-        if (data.err) {
+        if (!data) {
           setSaveStatus('ERROR');
         } else {
           setSaveStatus('SUCCESS');

@@ -45,6 +45,7 @@
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.3",
+    "@types/dotenv-safe": "^8.1.2",
     "@types/js-cookie": "^3.0.3",
     "@types/validator": "^13.7.17",
     "autoprefixer": "^10.4.14",

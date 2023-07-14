@@ -52,12 +52,14 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     const secret = process.env.JWT_SECRET;
     const refreshSecret = process.env.JWT_REFRESH_SECRET;
     if(secret && refreshSecret) {
+      const sessionId = uuidv4();
       const accessToken = jwt.sign(
         {
           user: {
             email: user.email,
             username: user.username,
             id: user._id,
+            sessionId: sessionId,
           },
         }, 
         secret,
@@ -76,7 +78,6 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
       // Store the refresh token in the database
       user.refreshTokens.push(refreshToken);
-      const sessionId = uuidv4();
       user.session = {
         sessionId,
         startTime: new Date(),
@@ -85,8 +86,8 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
       await user.save();
 
       // Set the JWT and refresh token in HttpOnly cookies
-      res.cookie('token', accessToken, { httpOnly: true, sameSite:  "none"});
-      res.cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: "none"});
+      res.cookie('token', accessToken, { httpOnly: true, sameSite:  "none", secure: true});
+      res.cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: "none", secure: true});
 
       res.status(HttpStatusCode.SUCCESS).json({session: {sessionId: sessionId}});
     }
@@ -149,8 +150,8 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
             await user.save();
             
             // Set the JWT and refresh token in HttpOnly cookies
-            res.cookie('token', accessToken, { httpOnly: true });
-            res.cookie('refreshToken', newRefreshToken, { httpOnly: true });
+            res.cookie('token', accessToken, { httpOnly: true, sameSite:  "none", secure: true});
+            res.cookie('refreshToken', newRefreshToken, { httpOnly: true, sameSite:  "none", secure: true});
             
             res.status(HttpStatusCode.SUCCESS).json({ accessToken, refreshToken: newRefreshToken });
           }

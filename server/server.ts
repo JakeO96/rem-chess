@@ -14,15 +14,16 @@ dotenv.config();
 connectDb();
 const app = express();
 const port = process.env.PORT || 3001;
+const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000'
 
-app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(cors({ origin: clientUrl, credentials: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../client/dist')));
-app.use(errorHandler);
 app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/game", gameRoutes);
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`server is running on port ${port}`);
