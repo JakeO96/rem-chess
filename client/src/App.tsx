@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   BrowserRouter,
   Route,
@@ -10,14 +9,12 @@ import HomePage from './pages/HomePage';
 import {RegisterPage} from './pages/RegisterPage'
 import {DashboardPage} from './pages/UserDashboardPage';
 import ExpressAPI from './api/express-api';
-import Cookies from 'js-cookie';
 
 
 const expressApi = new ExpressAPI();
 
 
 function App() {
-  Cookies.set('isLoggedIn', '', {sameSite: 'none', secure: true})
   return (
     <BrowserRouter>
       <Routes>

@@ -4,34 +4,6 @@ import Cookies from "js-cookie";
 import { useEffect, useState } from 'react';
 
 export const MainHeader: React.FC<{}> = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState('')
-
-  useEffect(() => {
-    const cookieValue = Cookies.get('isLoggedIn');
-    console.log(cookieValue);
-    if (cookieValue) {
-      setIsLoggedIn(cookieValue);
-    }
-    else {
-      <Navigate to='/' />
-    }
-    if (!isLoggedIn) {
-      <Navigate to='/' />
-    }
-  }, [isLoggedIn]);
-
-  const handleLogout = async () => {
-    const expressApi = new ExpressAPI();
-    try {
-      await expressApi.logUserOut();
-      Cookies.remove('token');
-      Cookies.remove('refreshToken');
-      Cookies.set('isLoggedIn', '', {sameSite: 'none', secure: true});
-      setIsLoggedIn('');
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
   return (
     <header>
@@ -57,21 +29,14 @@ export const MainHeader: React.FC<{}> = () => {
               ))}
             </nav>
             <div className="hidden lg:flex items-center justify-end lg:flex-1 lg:w-0">
-              {
-              isLoggedIn ? (
-                <button onClick={handleLogout} className="transition-all whitespace-nowrap text-base font-medium text-noct-teal hover:text-noct-gray">
-                  Log Out
-                </button>
-              ) : (
-                <>
-                  <NavLink to="/login" className="transition-all whitespace-nowrap text-base font-medium text-noct-teal hover:text-noct-gray">
-                    Log In
-                  </NavLink>
-                  <NavLink to="/register" className="ease-in duration-200 ml-8 whitespace-nowrap inline-flex items-center justify-center px-4 py-2 rounded-full text-base font-medium text-noct-white outline outline-noct-white bg-noct-black hover:bg-noct-white hover:outline-0 hover:text-noct-black">
-                    Create Account
-                  </NavLink>
+              <>
+                <NavLink to="/login" className="transition-all whitespace-nowrap text-base font-medium text-noct-teal hover:text-noct-gray">
+                  Log In
+                </NavLink>
+                <NavLink to="/register" className="ease-in duration-200 ml-8 whitespace-nowrap inline-flex items-center justify-center px-4 py-2 rounded-full text-base font-medium text-noct-white outline outline-noct-white bg-noct-black hover:bg-noct-white hover:outline-0 hover:text-noct-black">
+                  Create Account
+                </NavLink>
                 </>
-              )}
             </div>
           </div>
         </div>

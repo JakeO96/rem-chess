@@ -51,7 +51,6 @@ export const LogInForm: React.FC<LogInFormProps> = ({ expressApi }) => {
       .then((res: Response) => res.json())
       .then((data: any) => {
         if (data.success) {
-          Cookies.set('isLoggedIn', 'true', {sameSite: 'none', secure: true})
           setSaveStatus('SUCCESS');
         } else {
           setSaveStatus('ERROR');
