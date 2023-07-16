@@ -48,7 +48,6 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   const user = await User.findOne({ email });
 
   if(user && (await bcrypt.compare(password, user.password))) {
-    console.log(user._id)
     const secret = process.env.JWT_SECRET;
     const refreshSecret = process.env.JWT_REFRESH_SECRET;
     if(secret && refreshSecret) {
@@ -89,7 +88,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
       res.cookie('token', accessToken, { httpOnly: true, sameSite:  "none", secure: true});
       res.cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: "none", secure: true});
 
-      res.status(HttpStatusCode.SUCCESS).json({session: {sessionId: sessionId}});
+      res.status(HttpStatusCode.SUCCESS).json({success: true});
     }
     else {
       res.status(HttpStatusCode.SERVER_ERROR);
@@ -177,7 +176,7 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
 //@route POST /api/auth/logout
 //@access public
 export const logout = asyncHandler(async (req: Request, res: Response) => {
-  const token: string = req.cookies.token;
+  const token: string = req.cookies.refreshToken;
   
   // Get the user from the database
   const user = await User.findOne({ 'refreshTokens': token });

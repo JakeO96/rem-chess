@@ -1,15 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom'
+import { NavLink, Navigate } from 'react-router-dom'
 import ExpressAPI from "../api/express-api";
 import Cookies from "js-cookie";
+import { useEffect, useState } from 'react';
 
 export const MainHeader: React.FC<{}> = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState('')
 
   useEffect(() => {
-    const sessionId = Cookies.get('sessionId');
-    setIsLoggedIn(!!sessionId);
-  }, []);
+    const cookieValue = Cookies.get('isLoggedIn');
+    console.log(cookieValue);
+    if (cookieValue) {
+      setIsLoggedIn(cookieValue);
+    }
+    else {
+      <Navigate to='/' />
+    }
+    if (!isLoggedIn) {
+      <Navigate to='/' />
+    }
+  }, [isLoggedIn]);
 
   const handleLogout = async () => {
     const expressApi = new ExpressAPI();
@@ -17,7 +26,8 @@ export const MainHeader: React.FC<{}> = () => {
       await expressApi.logUserOut();
       Cookies.remove('token');
       Cookies.remove('refreshToken');
-      setIsLoggedIn(false);
+      Cookies.set('isLoggedIn', '', {sameSite: 'none', secure: true});
+      setIsLoggedIn('');
     } catch (err) {
       console.error(err);
     }
@@ -47,7 +57,8 @@ export const MainHeader: React.FC<{}> = () => {
               ))}
             </nav>
             <div className="hidden lg:flex items-center justify-end lg:flex-1 lg:w-0">
-              {isLoggedIn ? (
+              {
+              isLoggedIn ? (
                 <button onClick={handleLogout} className="transition-all whitespace-nowrap text-base font-medium text-noct-teal hover:text-noct-gray">
                   Log Out
                 </button>

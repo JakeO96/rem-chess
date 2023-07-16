@@ -17,13 +17,6 @@ export const DashboardPage: FC<DashboardPageProps> = ({ expressApi }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const sessionId: string | undefined = Cookies.get('sessionId');
-    if(sessionId) {
-      console.log(`in useEffect dashboard, sessionId is ${sessionId}`);
-    }
-    else {
-      console.log(`${sessionId}`)
-    }
     expressApi.getLoggedInUsers()
       .then((data) => {
         setUsers(data);

@@ -27,6 +27,12 @@ export default class ExpressAPI {
     return response;
   }
 
+  // Get a single user
+  getUser = async (): Promise<any> => {
+    const response = await this.makeApiCall(fetchMethods.GET, '/user');
+    return response;
+  }
+
   // Get all users currently logged in
   getLoggedInUsers = async (): Promise<any> => {
     const response = await this.makeApiCall(fetchMethods.GET, '/user/logged-in');

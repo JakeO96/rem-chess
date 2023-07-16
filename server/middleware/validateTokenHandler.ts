@@ -10,7 +10,6 @@ interface RequestWithUser extends Request {
 
 const extractToken = (req: RequestWithUser): string | undefined => {
   let token: string | undefined = req.cookies.token;
-  console.log(`Token: ${token}`);
   if (!token) {
     return undefined;
   }
@@ -19,7 +18,6 @@ const extractToken = (req: RequestWithUser): string | undefined => {
 
 const validateToken = asyncHandler(async (req: RequestWithUser, res: Response, next: NextFunction) => {
   let token: string | undefined = extractToken(req);
-  console.log(`in validateToken the token is ${token}`)
   if (token) {
     try {
       const secret = process.env.JWT_SECRET;
@@ -31,23 +29,19 @@ const validateToken = asyncHandler(async (req: RequestWithUser, res: Response, n
               throw new Error("Session has expired. Please log in again.");
             } else {
               res.status(HttpStatusCode.UNAUTHORIZED);
-              throw new Error("User not authorized");
+              throw new Error("User not authorized from validateToken from validateToken");
             }
           }
           else {
             const decodedToken = decoded as JwtPayload;
-            console.log(`decodedToken in valTokenHandler: ${decodedToken}`)
             req.user = decodedToken.user;
-            console.log(`req.user in valTokenHandler: ${req.user} , decodedToken.user: ${decodedToken.user}`)
             const sessionId = decodedToken.user.sessionId;
-            console.log(`sessionId in valTokenHandler: ${sessionId}`)
-            // Fetch user from database using the ID in decodedToken
             const user = await User.findById(decodedToken.user.id);
             if (user && user.session.sessionId === sessionId && user.session.endTime === null) {
               next();
             } else {
               res.status(HttpStatusCode.UNAUTHORIZED);
-              throw new Error("Invalid session");
+              throw new Error("Invalid session from validateToken");
             }
           }
         })

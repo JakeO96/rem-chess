@@ -1,18 +1,10 @@
 import React, { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom'
 import ExpressAPI from '../api/express-api';
-import Cookies from 'js-cookie';
 import isEmail from 'validator/lib/isEmail'
 
 import { ValidateFormField } from './FormFields';
-
-interface SessionObject extends Object {
-  sessionId: string;
-}
-
-interface LogInAPIResponse {
-  session: SessionObject
-}
+import Cookies from 'js-cookie';
 
 type Field = {
   email: string;
@@ -57,15 +49,11 @@ export const LogInForm: React.FC<LogInFormProps> = ({ expressApi }) => {
 
     expressApi.logUserIn(fields)
       .then((res: Response) => res.json())
-      .then((responseData: LogInAPIResponse) => {
-        const session: SessionObject = responseData.session;
-        const sessionId = session.sessionId;
-        if (sessionId) {
-          console.log('in LogInForm on submit' + sessionId);
-          Cookies.set('sessionId', sessionId, {sameSite: 'none', secure: true});
+      .then((data: any) => {
+        if (data.success) {
+          Cookies.set('isLoggedIn', 'true', {sameSite: 'none', secure: true})
           setSaveStatus('SUCCESS');
         } else {
-          console.log("Failed to create session");
           setSaveStatus('ERROR');
         }
       })
