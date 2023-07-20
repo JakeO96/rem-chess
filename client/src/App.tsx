@@ -4,26 +4,39 @@ import {
   Routes
 } from 'react-router-dom';
 
-import {LogInPage} from './pages/LogInPage'
 import HomePage from './pages/HomePage';
-import {RegisterPage} from './pages/RegisterPage'
-import {DashboardPage} from './pages/UserDashboardPage';
+import { LogInPage } from './pages/LogInPage'
+import { RegisterPage } from './pages/RegisterPage'
+import { DashboardPage } from './pages/UserDashboardPage';
+import { AuthProvider } from './context/AuthContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import ExpressAPI from './api/express-api';
 
-
-const expressApi = new ExpressAPI();
-
-
 function App() {
+  const expressApi = new ExpressAPI();
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path='/' element={<HomePage />} />
-        <Route path='login' element={<LogInPage expressApi={expressApi} />} />
-        <Route path='register' element={<RegisterPage expressApi={expressApi} />} />
-        <Route path='dashboard' element={<DashboardPage expressApi={expressApi} />} />
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider expressApi={expressApi}>
+      <BrowserRouter>
+        <Routes>
+          <Route path='/' element={<HomePage />} />
+          <Route path='login' element={<LogInPage />} />
+          <Route 
+            path='register' 
+            element={
+              <RegisterPage expressApi={expressApi} />
+            } 
+          />
+          <Route 
+            path='dashboard' 
+            element={
+              <ProtectedRoute>
+                <DashboardPage expressApi={expressApi}/>
+              </ProtectedRoute>
+            } 
+          />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

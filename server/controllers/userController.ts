@@ -76,10 +76,10 @@ export const fieldExists = asyncHandler(async (req: Request, res: Response) => {
 //@desc Update a User record
 //@route PUT /api/user/:id
 //@access public
-export const updateUser = asyncHandler( async (req: Request, res: Response) => {
+export const updateUser = asyncHandler(async (req: Request, res: Response) => {
   const { email, username, password } = req.body;
   const user = await User.findById(req.params.id);
-  if (user){
+  if (user) {
     const saltRounds = process.env.SALT_ROUNDS ? parseInt(process.env.SALT_ROUNDS, 10) : 10;
     try {
       console.log(`In updateUser, the old hashedpassword is ${user.password}`);
@@ -89,11 +89,11 @@ export const updateUser = asyncHandler( async (req: Request, res: Response) => {
       console.log(`In updateUser, the new hashed password is ${hashedUpdatedPassword}`);
       const updatedUser = await User.findByIdAndUpdate(
         user._id,
-        {email, username, password: hashedUpdatedPassword},
+        { email, username, password: hashedUpdatedPassword },
         { new: true }
       )
       if(updatedUser) {
-        res.status(HttpStatusCode.SUCCESS).json({id: updatedUser._id, email: updatedUser.email, username: updatedUser.username})
+        res.status(HttpStatusCode.SUCCESS).json({ id: updatedUser._id, email: updatedUser.email, username: updatedUser.username })
       }
       else {
         res.status(HttpStatusCode.SERVER_ERROR);

@@ -1,17 +1,11 @@
-import React, { FC} from 'react';
-import ExpressAPI from '../api/express-api';
+import { FC } from 'react';
 import { LogInForm } from '../components/LogInForm'
 import MainLayout from '../components/MainLayout';
 
-
-interface LogInPageProps {
-  expressApi: ExpressAPI;
-}
-
-export const LogInPage: FC<LogInPageProps> = ({ expressApi }) => {
+export const LogInPage: FC<{}> = () => {
   return (
     <MainLayout>
-      <LogInForm expressApi={ expressApi } />
+      <LogInForm />
     </MainLayout>
   )
 };

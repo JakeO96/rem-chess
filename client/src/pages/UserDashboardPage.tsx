@@ -1,7 +1,6 @@
 import { FC, useEffect, useState } from "react";
 import MainLayout from "../components/MainLayout";
 import ExpressAPI from "../api/express-api";
-import Cookies from "js-cookie";
 
 interface DashboardPageProps {
   expressApi: ExpressAPI

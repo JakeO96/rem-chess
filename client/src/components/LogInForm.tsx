@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom'
-import ExpressAPI from '../api/express-api';
-import isEmail from 'validator/lib/isEmail'
-
+import isEmail from 'validator/lib/isEmail';
+import { AuthContext } from '../context/AuthContext';
 import { ValidateFormField } from './FormFields';
-import Cookies from 'js-cookie';
 
 type Field = {
   email: string;
@@ -21,14 +19,11 @@ type InputObject = {
   error?: string,
 }
 
-interface LogInFormProps {
-  expressApi: ExpressAPI;
-}
-
-export const LogInForm: React.FC<LogInFormProps> = ({ expressApi }) => {
+export const LogInForm: React.FC<{}> = () => {
   const [fields, setFields] = useState<Field>({ email: '', password: '' });
   const [fieldErrors, setFieldErrors] = useState<Errors>({});
   const [saveStatus, setSaveStatus] = useState<string>('READY');
+  const { logIn } = useContext(AuthContext);
 
   const missingRequiredFields = (): boolean => {
     const errMessages = Object.keys(fieldErrors).filter(k => fieldErrors[k]);
@@ -47,19 +42,9 @@ export const LogInForm: React.FC<LogInFormProps> = ({ expressApi }) => {
 
     setSaveStatus('SAVING');
 
-    expressApi.logUserIn(fields)
-      .then((res: Response) => res.json())
-      .then((data: any) => {
-        if (data.success) {
-          setSaveStatus('SUCCESS');
-        } else {
-          setSaveStatus('ERROR');
-        }
-      })
-      .catch((err: any) => {
-        console.error(err);
-        setSaveStatus('ERROR');
-      });
+    logIn(fields).then((success) => {
+      success ? setSaveStatus('SUCCESS') : setSaveStatus('ERROR');
+    });
   };
 
   return (

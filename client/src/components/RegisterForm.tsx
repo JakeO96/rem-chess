@@ -1,7 +1,8 @@
 import isEmail from 'validator/lib/isEmail';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import { ValidateFormField, ServerConnectedFormField } from './FormFields';
+import { AuthContext } from '../context/AuthContext';
 import ExpressAPI from '../api/express-api';
 
 type Fields = {
@@ -28,6 +29,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ expressApi }) => {
   const [fields, setFields] = useState<Fields>({ username: '', password: '', email: '' });
   const [fieldErrors, setFieldErrors] = useState<Errors>({});
   const [_saveStatus, setSaveStatus] = useState<string>('READY');
+  const { register } = useContext(AuthContext)
 
   const missingRequiredFields = (): boolean => {
     const errMessages = Object.keys(fieldErrors).filter(k => fieldErrors[k]);
@@ -41,25 +43,15 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ expressApi }) => {
     setFieldErrors(prev => ({ ...prev, [name]: error }));
   };
 
-  const onFormSubmit = (evt: React.FormEvent<HTMLFormElement>): void => {
+  const onFormSubmit = async (evt: React.FormEvent<HTMLFormElement>): Promise<void> => {
     evt.preventDefault();
 
     if (missingRequiredFields()) return;
 
     setSaveStatus('SAVING');
-    expressApi.createUser(fields)
-      .then(res => res.json())
-      .then((data) => {
-        if (!data) {
-          setSaveStatus('ERROR');
-        } else {
-          setSaveStatus('SUCCESS');
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-        setSaveStatus('ERROR');
-      });
+    register(fields).then((success) => {
+      success ? setSaveStatus('SUCCESS') : setSaveStatus('ERROR');
+    })
   };
 
   return (

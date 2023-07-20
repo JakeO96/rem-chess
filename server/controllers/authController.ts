@@ -32,7 +32,7 @@ export const createUser = asyncHandler(async (req: Request, res: Response) => {
       password: hashedPassword,
     });
     await user.save();
-    res.status(HttpStatusCode.RECORD_CREATED).json({id: user._id, email: user.email, username: user.username});
+    res.status(HttpStatusCode.RECORD_CREATED).json({success: true});
   } catch (error) {
     res.status(HttpStatusCode.SERVER_ERROR);
     throw new Error(`Problem storing password ${error}`);
@@ -101,6 +101,34 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   }
 });
 
+//@desc Log a User out
+//@route POST /api/auth/logout
+//@access public
+export const logout = asyncHandler(async (req: Request, res: Response) => {
+  const token: string = req.cookies.refreshToken;
+  
+  // Get the user from the database
+  const user = await User.findOne({ 'refreshTokens': token });
+
+  if(user) {
+    // Add the token to the invalidatedTokens array in the database
+    user.invalidatedTokens.push(token);
+    // Remove the token from the refreshTokens array in the database
+    user.refreshTokens = user.refreshTokens.filter(rt => rt !== token);
+    user.session.endTime = new Date();
+    await user.save();
+
+    // Clear the token from the cookie
+    res.clearCookie('token');
+    res.clearCookie('refreshToken');
+    
+    res.status(HttpStatusCode.SUCCESS).json({ success: true });
+  }
+  else {
+    res.status(HttpStatusCode.UNAUTHORIZED);
+    throw new Error("User not authorized");
+  }
+});
 
 //@desc Refresh an access token
 //@route POST /api/auth/refresh
@@ -165,35 +193,6 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
         }
       }
     });
-  }
-  else {
-    res.status(HttpStatusCode.UNAUTHORIZED);
-    throw new Error("User not authorized");
-  }
-});
-
-//@desc Log a User out
-//@route POST /api/auth/logout
-//@access public
-export const logout = asyncHandler(async (req: Request, res: Response) => {
-  const token: string = req.cookies.refreshToken;
-  
-  // Get the user from the database
-  const user = await User.findOne({ 'refreshTokens': token });
-
-  if(user) {
-    // Add the token to the invalidatedTokens array in the database
-    user.invalidatedTokens.push(token);
-    // Remove the token from the refreshTokens array in the database
-    user.refreshTokens = user.refreshTokens.filter(rt => rt !== token);
-    user.session.endTime = new Date();
-    await user.save();
-
-    // Clear the token from the cookie
-    res.clearCookie('token');
-    res.clearCookie('refreshToken');
-    
-    res.status(HttpStatusCode.SUCCESS).json({ message: 'User has been logged out.' });
   }
   else {
     res.status(HttpStatusCode.UNAUTHORIZED);
