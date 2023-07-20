@@ -6,17 +6,13 @@ interface DashboardPageProps {
   expressApi: ExpressAPI
 }
 
-interface User {
-  username: string;
-  // Include any other user fields you want to display
-}
-
 export const DashboardPage: FC<DashboardPageProps> = ({ expressApi }) => {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     expressApi.getLoggedInUsers()
+      .then((res) =>  res.json() )
       .then((data) => {
         setUsers(data);
         setIsLoading(false);
@@ -38,8 +34,8 @@ export const DashboardPage: FC<DashboardPageProps> = ({ expressApi }) => {
         <p>Loading...</p>
       ) : users.length > 0 ? (
         <ul>
-          {users.map((user, index) => (
-            <li key={index}>{user.username}</li>
+          {users.map((username, index) => (
+            <li key={index}>{username}</li>
           ))}
         </ul>
       ) : (

@@ -21,7 +21,8 @@ type AuthProviderProps = {
 };
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children, expressApi }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const isUserLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+  const [isLoggedIn, setIsLoggedIn] = useState(isUserLoggedIn);
 
   const logIn = async (fields: { email: string; password: string }) => {
     try {
@@ -29,6 +30,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, expressApi
       const data = await res.json();
 
       if (data.success) {
+        localStorage.setItem('isLoggedIn', 'true');
         setIsLoggedIn(true);
         return true;
       }
@@ -44,6 +46,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, expressApi
       const data = await res.json();
 
       if (data.success) {
+        localStorage.removeItem('isLoggedIn');
         setIsLoggedIn(false);
         return true;
       }

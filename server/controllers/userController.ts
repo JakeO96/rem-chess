@@ -28,9 +28,12 @@ export const getAllUsers = asyncHandler( async (req: Request, res: Response) => 
 //@route GET /api/user/logged-in
 //@access public
 export const getLoggedInUsers = asyncHandler(async (req: Request, res: Response) => {
-  const users = await User.find({ 'session.endTime': null });
+  const users = await User.find({ 'session.current': true });
+  console.log('sever side')
+  console.log(users);
   if (users) {
-    res.status(HttpStatusCode.SUCCESS).json(users);
+    const usernames = users.map(user => user.username);
+    res.status(HttpStatusCode.SUCCESS).json(usernames);
   } 
   else {
     res.status(HttpStatusCode.NOT_FOUND);

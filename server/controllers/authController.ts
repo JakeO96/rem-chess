@@ -79,6 +79,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
       user.refreshTokens.push(refreshToken);
       user.session = {
         sessionId,
+        current: true,
         startTime: new Date(),
         endTime: null,
       };

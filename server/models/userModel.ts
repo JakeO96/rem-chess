@@ -10,6 +10,7 @@ export interface IUser extends Document {
   invalidatedTokens: string[];
   session: {
     sessionId: string;
+    current: boolean;
     startTime: Date;
     endTime: Date | null;
   };
@@ -47,6 +48,10 @@ const userSchema = new mongoose.Schema(
       sessionId: {
         type: String,
         default: null,
+      },
+      current: {
+        type: Boolean,
+        default: false,
       },
       startTime: {
         type: Date,
