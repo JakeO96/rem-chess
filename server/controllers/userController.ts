@@ -29,8 +29,6 @@ export const getAllUsers = asyncHandler( async (req: Request, res: Response) => 
 //@access public
 export const getLoggedInUsers = asyncHandler(async (req: Request, res: Response) => {
   const users = await User.find({ 'session.current': true });
-  console.log('sever side')
-  console.log(users);
   if (users) {
     const usernames = users.map(user => user.username);
     res.status(HttpStatusCode.SUCCESS).json(usernames);

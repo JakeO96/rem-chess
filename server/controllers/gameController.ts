@@ -12,26 +12,48 @@ interface RequestWithUser extends Request {
 //@desc Create a Game record
 //@route POST /api/game/create-game
 //@access private
-const createGame = asyncHandler( async (req: Request, res: Response) => {
-  const { player_id, opponent_id, moves} = req.body;
-  if ( !player_id || !opponent_id|| !moves ) {
+const createGame = asyncHandler( async (req: RequestWithUser, res: Response) => {
+  const opponent_username = req.body;
+  if ( !opponent_username ) {
     res.status(HttpStatusCode.VALIDATION_ERROR);
     throw new Error("Missing required fields");
   }
-  const game = new Game({
-    player_id: player_id,
-    opponent_id: opponent_id,
-    moves: moves,
-  });
-  await game.save();
 
-  await User.findByIdAndUpdate(player_id, { $push: { games: game._id } });
+  const opponent = await User.findOne({ opponent_username });
+  if (!opponent) {
+    res.status(HttpStatusCode.VALIDATION_ERROR);
+    throw new Error("Opponent does not exist");
+  }
+
+  if (!req.user) {
+    res.status(HttpStatusCode.UNAUTHORIZED);
+    throw new Error("UNAUTHORIZED");
+  }
   
-  res.status(HttpStatusCode.RECORD_CREATED).json({
-    game_id: game._id, 
-    player_id: player_id, 
-    opponent_id: opponent_id, 
-    moves: moves,});
+  const hero_username = req.user.username;
+  const hero = await User.findOne({ hero_username});
+  if (!hero){
+    res.status(HttpStatusCode.VALIDATION_ERROR);
+    throw new Error("Opponent does not exist");
+  }
+
+  const hero_game = new Game({
+    playerId: hero._id,
+    opponentId: opponent._id,
+    moves: [],
+  });
+  const opponent_game = new Game({
+    playerId: opponent._id,
+    opponentId: hero._id,
+    moves: [],
+  });
+  await hero_game.save();
+  await opponent_game.save();
+
+  await User.findByIdAndUpdate(hero._id, { $push: { games: hero_game._id } });
+  await User.findByIdAndUpdate(opponent._id, { $push: { games: opponent._id } });
+  
+  res.status(HttpStatusCode.RECORD_CREATED).json({ /** TODO */});
 })
 
 //@desc Get all Game records for a User
