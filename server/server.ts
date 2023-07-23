@@ -23,6 +23,10 @@ interface ExtendedWebSocket extends WebSocket {
   userId?: string;
 }
 
+interface ActiveConnections {
+  [key: string]: ExtendedWebSocket;
+}
+
 connectDb();
 const app = express();
 const port = process.env.PORT || 3001;
@@ -46,15 +50,27 @@ server.listen(port, () => {
 const wss = new WebSocket.Server({ 
   server, 
   verifyClient: (info, callback) => {
-    const token = info.req.headers['sec-websocket-protocol'];
+    const cookieString = info.req.headers.cookie || "";
+    const cookies = cookieString.split('; ').reduce((acc, current) => {
+      const [name, value] = current.split('=');
+      acc[name] = value;
+      return acc;
+    }, {} as Record<string, string>);
+
+    const token = cookies.token;
+    console.log('during ws creation jwt token is:')
+    console.log(token)
     const secret = process.env.JWT_SECRET;
+    console.log('during ws creation jwt secret is:')
+    console.log(secret)
     if (token && secret) {
       jwt.verify(token, secret, (err, decoded) => {
         if (err) {
           callback(false);
         } else {
           if (decoded && typeof decoded !== 'string') {
-            (info.req as ExtendedIncomingMessage).user = { id: decoded.id };
+            console.log(decoded.user.id);
+            (info.req as ExtendedIncomingMessage).user = { id: decoded.user.id };
             callback(true);
           }
         }
@@ -63,7 +79,7 @@ const wss = new WebSocket.Server({
   } 
 });
 
-const activeConnections = {};
+const activeConnections: ActiveConnections = {};
 
 wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
   if (req.user && req.user.id) {
@@ -71,7 +87,7 @@ wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
     activeConnections[ws.userId] = ws;
   }
   // When a new connection is made, send a message to the client
-  ws.send('Connected to WebSocket server');
+  ws.send(JSON.stringify({ message: 'Connected to WebSocket server' }));
 
   ws.on('message', (message) => {
     const messageStr = typeof message === 'string' ? message : message.toString();

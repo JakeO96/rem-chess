@@ -8,6 +8,7 @@ interface StartGamePortalProps {
 }
 
 export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
+  console.log('StartGamePortal render');
 
   const [users, setUsers] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -37,6 +38,9 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
     if (ws) {
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
+        if (data.message) {
+          console.log(data.message)
+        }
         if (data.type === 'game-invite') {
           const accepted = window.confirm(`You have been invited to a game by ${data.inviterUsername}. Do you accept?`);
           const message = JSON.stringify({ type: 'game-invite-response', accepted });
@@ -48,7 +52,7 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
         }
       };
     }
-  }, [ws, navigate]);
+  }, [navigate]);
 
   useEffect(() => {
     if (!isLoggedIn && ws) {
@@ -61,7 +65,7 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
     const message = JSON.stringify({ type: 'game-invite', invitedUser: player2 });
     if (ws) ws.send(message);
 
-    
+
     const handleGameStart = (gameId: string) => {
       const message = JSON.stringify({ type: 'game-start', gameId });
       if (ws) ws.send(message);

@@ -13,8 +13,9 @@ import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import ExpressAPI from './api/express-api';
 
+const expressApi: ExpressAPI = new ExpressAPI();
+
 function App() {
-  const expressApi = new ExpressAPI();
   return (
     <AuthProvider expressApi={expressApi}>
       <BrowserRouter>
