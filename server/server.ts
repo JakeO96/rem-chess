@@ -1,13 +1,15 @@
 import {authRouter as authRoutes} from './routes/authRoutes';
 import {userRouter as userRoutes} from './routes/userRoutes';
 import {gameRouter as gameRoutes} from './routes/gameRoutes';
-
-import express from "express"
 import { errorHandler } from "./middleware/errorHandler"
 import { connectDb } from "./config/dbConnection"
+import express from "express"
 import path from 'path';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import WebSocket from 'ws';
+import http from 'http';
+import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv-safe';
 dotenv.config();
 
@@ -25,6 +27,21 @@ app.use("/api/user", userRoutes);
 app.use("/api/game", gameRoutes);
 app.use(errorHandler);
 
-app.listen(port, () => {
+const server = http.createServer(app);
+
+server.listen(port, () => {
   console.log(`server is running on port ${port}`);
 })
+
+// Assuming that 'server' is your HTTP server
+const wss = new WebSocket.Server({ server });
+
+wss.on('connection', (ws) => {
+    // When a new connection is made, send a message to the client
+    ws.send('Connected to WebSocket server');
+
+    // Listen for messages from the client
+    ws.on('message', (message) => {
+        console.log('Received: %s', message);
+    });
+});
