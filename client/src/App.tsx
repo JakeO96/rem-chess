@@ -8,6 +8,7 @@ import HomePage from './pages/HomePage';
 import { LogInPage } from './pages/LogInPage'
 import { RegisterPage } from './pages/RegisterPage'
 import { DashboardPage } from './pages/UserDashboardPage';
+import { ActiveGamePage } from './pages/ActiveGamePage';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import ExpressAPI from './api/express-api';
@@ -30,7 +31,15 @@ function App() {
             path='dashboard' 
             element={
               <ProtectedRoute>
-                <DashboardPage expressApi={expressApi}/>
+                <DashboardPage expressApi={expressApi} />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path='game/:gameId' 
+            element={
+              <ProtectedRoute>
+                <ActiveGamePage />
               </ProtectedRoute>
             } 
           />

@@ -89,7 +89,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
       res.cookie('token', accessToken, { httpOnly: true, sameSite:  "none", secure: true});
       res.cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: "none", secure: true});
 
-      res.status(HttpStatusCode.SUCCESS).json({success: true});
+      res.status(HttpStatusCode.SUCCESS).json({success: true, username: user.username});
     }
     else {
       res.status(HttpStatusCode.SERVER_ERROR);

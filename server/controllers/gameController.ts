@@ -13,47 +13,36 @@ interface RequestWithUser extends Request {
 //@route POST /api/game/create-game
 //@access private
 const createGame = asyncHandler( async (req: RequestWithUser, res: Response) => {
-  const opponent_username = req.body;
+  const { player1: hero_username, player2: opponent_username } = req.body;
   if ( !opponent_username ) {
     res.status(HttpStatusCode.VALIDATION_ERROR);
     throw new Error("Missing required fields");
   }
 
-  const opponent = await User.findOne({ opponent_username });
+  const opponent = await User.findOne({ username: opponent_username });
   if (!opponent) {
     res.status(HttpStatusCode.VALIDATION_ERROR);
-    throw new Error("Opponent does not exist");
+    throw new Error("Some user does not exist");
   }
 
-  if (!req.user) {
-    res.status(HttpStatusCode.UNAUTHORIZED);
-    throw new Error("UNAUTHORIZED");
-  }
-  
-  const hero_username = req.user.username;
-  const hero = await User.findOne({ hero_username});
+  const hero = await User.findOne({ username: hero_username});
   if (!hero){
     res.status(HttpStatusCode.VALIDATION_ERROR);
-    throw new Error("Opponent does not exist");
+    throw new Error("Some user does not exist");
   }
 
-  const hero_game = new Game({
-    playerId: hero._id,
+  const game = new Game({
+    heroId: hero._id,
     opponentId: opponent._id,
     moves: [],
   });
-  const opponent_game = new Game({
-    playerId: opponent._id,
-    opponentId: hero._id,
-    moves: [],
-  });
-  await hero_game.save();
-  await opponent_game.save();
 
-  await User.findByIdAndUpdate(hero._id, { $push: { games: hero_game._id } });
-  await User.findByIdAndUpdate(opponent._id, { $push: { games: opponent._id } });
+  await game.save();
+
+  await User.findByIdAndUpdate(hero._id, { $push: { games: game._id } });
+  await User.findByIdAndUpdate(opponent._id, { $push: { games: game._id } });
   
-  res.status(HttpStatusCode.RECORD_CREATED).json({ /** TODO */});
+  res.status(HttpStatusCode.RECORD_CREATED).json({gameId: game._id});
 })
 
 //@desc Get all Game records for a User
