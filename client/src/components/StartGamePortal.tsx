@@ -1,7 +1,8 @@
-import { FC, MouseEventHandler, useContext, useEffect, useState } from "react"
-import { useNavigate } from 'react-router-dom'
+import { FC, useCallback, useEffect, useState } from "react"
+//import { useNavigate } from 'react-router-dom'
 import ExpressAPI from "../api/express-api";
-import { AuthContext } from "../context/AuthContext";
+//import { AuthContext } from "../context/AuthContext";
+import useWebSocket, { ReadyState } from 'react-use-websocket';
 
 interface StartGamePortalProps {
   expressApi: ExpressAPI;
@@ -12,10 +13,21 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
 
   const [users, setUsers] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [ws, setWs] = useState<WebSocket | null>(null);
+  const [socketUrl, setSocketUrl] = useState('wss://echo.websocket.org');
+  const [messageHistory, setMessageHistory] = useState<string[]>([]);
 
-  const navigate = useNavigate();
-  const { isLoggedIn, username } = useContext(AuthContext);
+  const { 
+    sendMessage, 
+    lastMessage, 
+    readyState 
+  } = useWebSocket(socketUrl, { 
+    onOpen: () => console.log('opened'), 
+    shouldReconnect: (closeEvent) => true,
+  });
+
+
+  //const navigate = useNavigate();
+  //const { isLoggedIn, username } = useContext(AuthContext);
 
   useEffect(() => {
     expressApi.getLoggedInUsers()
@@ -30,6 +42,13 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
       });
   }, [expressApi]);
 
+  useEffect(() => {
+    if (lastMessage !== null) {
+      setMessageHistory((prev) => prev.concat(lastMessage.data));
+    }
+  }, [lastMessage, setMessageHistory]);
+
+  /** 
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:3001');
     setWs(ws);
@@ -46,32 +65,42 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
           const message = JSON.stringify({ type: 'game-invite-response', accepted });
           ws.send(message);
         } else if (data.type === 'game-start') {
-          // Replace '/game' with the actual path to your game page
-          // 'data.gameId' should be the id of the game that was created on the server
           navigate(`/game/${data.gameId}`);
         }
       };
     }
   }, [navigate]);
+*/
 
+/** 
   useEffect(() => {
     if (!isLoggedIn && ws) {
       ws.close();
     }
   }, [isLoggedIn, ws]);
+*/
 
-  const handleUsernameClick: MouseEventHandler<HTMLButtonElement> = (evt: React.MouseEvent<HTMLButtonElement>) => {
-    const player2 = evt.currentTarget.dataset.username;
-    const message = JSON.stringify({ type: 'game-invite', invitedUser: player2 });
-    if (ws) ws.send(message);
+const handleUsernameClick = useCallback((evt: React.MouseEvent<HTMLButtonElement>) => {
+  const player2 = evt.currentTarget.dataset.username;
+  const message = JSON.stringify({ type: 'game-invite', invitedUser: player2 });
+  sendMessage(message);
+}, [sendMessage]);
 
-
+/** 
     const handleGameStart = (gameId: string) => {
       const message = JSON.stringify({ type: 'game-start', gameId });
       if (ws) ws.send(message);
     };
     expressApi.createGame({ player1: username, player2 }, handleGameStart);
   }
+*/
+  const connectionStatus = {
+    [ReadyState.CONNECTING]: 'Connecting',
+    [ReadyState.OPEN]: 'Open',
+    [ReadyState.CLOSING]: 'Closing',
+    [ReadyState.CLOSED]: 'Closed',
+    [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
+  }[readyState];
 
   return (
     <>
@@ -81,13 +110,26 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
         <ul>
           {users.map((username, index) => (
             <li key={index}>
-              <button data-username={username} onClick={handleUsernameClick}>{username}</button>
+              <button 
+                disabled={readyState !== ReadyState.OPEN} 
+                data-username={username} 
+                onClick={handleUsernameClick}>
+                {username}
+              </button>
             </li>
           ))}
         </ul>
       ) : (
         <p>No users are currently logged in.</p>
       )}
+
+    <span>The WebSocket is currently {connectionStatus}</span>
+      {lastMessage ? <span>Last message: {lastMessage.data}</span> : null}
+      <ul>
+        {messageHistory.map((message, idx) => (
+          <span key={idx}>{message ? message : null}</span>
+        ))}
+      </ul>
     </>
   )
 }
