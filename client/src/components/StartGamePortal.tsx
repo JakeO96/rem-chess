@@ -13,7 +13,7 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
 
   const [users, setUsers] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [socketUrl, setSocketUrl] = useState('wss://echo.websocket.org');
+  const [socketUrl, setSocketUrl] = useState('ws://localhost:3001');
   const [messageHistory, setMessageHistory] = useState<string[]>([]);
 
   const { 
