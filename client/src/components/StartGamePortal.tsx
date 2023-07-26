@@ -1,8 +1,11 @@
-import { FC, useCallback, useEffect, useState } from "react"
+import { FC, useCallback, useContext, useEffect, useState } from "react"
 //import { useNavigate } from 'react-router-dom'
 import ExpressAPI from "../api/express-api";
 //import { AuthContext } from "../context/AuthContext";
 import useWebSocket, { ReadyState } from 'react-use-websocket';
+import { Navigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import Cookies from "js-cookie";
 
 interface StartGamePortalProps {
   expressApi: ExpressAPI;
@@ -15,7 +18,7 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [socketUrl, setSocketUrl] = useState('ws://localhost:3001');
   const [messageHistory, setMessageHistory] = useState<string[]>([]);
-
+  const { username } = useContext(AuthContext)
   const { 
     sendMessage, 
     lastMessage, 
@@ -24,10 +27,13 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
     onOpen: () => console.log('opened'), 
     shouldReconnect: (closeEvent) => true,
   });
-
-
-  //const navigate = useNavigate();
-  //const { isLoggedIn, username } = useContext(AuthContext);
+  const connectionStatus = {
+    [ReadyState.CONNECTING]: 'Connecting',
+    [ReadyState.OPEN]: 'Open',
+    [ReadyState.CLOSING]: 'Closing',
+    [ReadyState.CLOSED]: 'Closed',
+    [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
+  }[readyState];
 
   useEffect(() => {
     expressApi.getLoggedInUsers()
@@ -45,62 +51,27 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
   useEffect(() => {
     if (lastMessage !== null) {
       setMessageHistory((prev) => prev.concat(lastMessage.data));
-    }
-  }, [lastMessage, setMessageHistory]);
-
-  /** 
-  useEffect(() => {
-    const ws = new WebSocket('ws://localhost:3001');
-    setWs(ws);
-
-    // Handle WebSocket events here...
-    if (ws) {
-      ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.message) {
-          console.log(data.message)
-        }
-        if (data.type === 'game-invite') {
+      const data = JSON.parse(lastMessage.data);
+      if (data.type === 'game-invite') {
           const accepted = window.confirm(`You have been invited to a game by ${data.inviterUsername}. Do you accept?`);
-          const message = JSON.stringify({ type: 'game-invite-response', accepted });
-          ws.send(message);
-        } else if (data.type === 'game-start') {
-          navigate(`/game/${data.gameId}`);
-        }
-      };
+          const responseMessage = JSON.stringify({ type: 'game-invite-response', accepted, recievingUser: data.initiatingUser, initiatingUser: data.recievingUser });
+          sendMessage(responseMessage);
+      } else if (data.type === 'game-start') {
+        expressApi.createGame(data, ((gameId) => {
+          Cookies.set('activeGameId', gameId);
+          <Navigate to={`/game/${data.gameId}`} />;
+        }))
+      } else if (data.type === 'game-decline') {
+        alert(`${data.initiatingUser} declined to start a game.`);
+      }
     }
-  }, [navigate]);
-*/
+  }, [lastMessage, setMessageHistory, sendMessage, expressApi]);
 
-/** 
-  useEffect(() => {
-    if (!isLoggedIn && ws) {
-      ws.close();
-    }
-  }, [isLoggedIn, ws]);
-*/
-
-const handleUsernameClick = useCallback((evt: React.MouseEvent<HTMLButtonElement>) => {
-  const player2 = evt.currentTarget.dataset.username;
-  const message = JSON.stringify({ type: 'game-invite', invitedUser: player2 });
-  sendMessage(message);
-}, [sendMessage]);
-
-/** 
-    const handleGameStart = (gameId: string) => {
-      const message = JSON.stringify({ type: 'game-start', gameId });
-      if (ws) ws.send(message);
-    };
-    expressApi.createGame({ player1: username, player2 }, handleGameStart);
-  }
-*/
-  const connectionStatus = {
-    [ReadyState.CONNECTING]: 'Connecting',
-    [ReadyState.OPEN]: 'Open',
-    [ReadyState.CLOSING]: 'Closing',
-    [ReadyState.CLOSED]: 'Closed',
-    [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
-  }[readyState];
+  const handleUsernameClick = useCallback((evt: React.MouseEvent<HTMLButtonElement>) => {
+    const player2 = evt.currentTarget.dataset.username;
+    const message = JSON.stringify({ type: 'game-invite', recievingUser: player2, initiatingUser: username });
+    sendMessage(message);
+  }, [sendMessage, username]);
 
   return (
     <>

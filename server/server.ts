@@ -11,16 +11,17 @@ import WebSocket from 'ws';
 import http, { IncomingMessage} from 'http';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv-safe';
+import { info } from 'console';
 dotenv.config();
 
 interface ExtendedIncomingMessage extends IncomingMessage {
   user?: { 
-    id?: string; 
+    username?: string; 
   };
 }
 
 interface ExtendedWebSocket extends WebSocket {
-  userId?: string;
+  username?: string;
 }
 
 interface ActiveConnections {
@@ -58,19 +59,14 @@ const wss = new WebSocket.Server({
     }, {} as Record<string, string>);
 
     const token = cookies.token;
-    console.log('during ws creation jwt token is:')
-    console.log(token)
     const secret = process.env.JWT_SECRET;
-    console.log('during ws creation jwt secret is:')
-    console.log(secret)
     if (token && secret) {
       jwt.verify(token, secret, (err, decoded) => {
         if (err) {
           callback(false);
         } else {
           if (decoded && typeof decoded !== 'string') {
-            console.log(decoded.user.id);
-            (info.req as ExtendedIncomingMessage).user = { id: decoded.user.id };
+            (info.req as ExtendedIncomingMessage).user = { username: decoded.user.username };
             callback(true);
           }
         }
@@ -82,9 +78,9 @@ const wss = new WebSocket.Server({
 const activeConnections: ActiveConnections = {};
 
 wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
-  if (req.user && req.user.id) {
-    ws.userId = req.user.id;
-    activeConnections[ws.userId] = ws;
+  if (req.user && req.user.username) {
+    ws.username = req.user.username;
+    activeConnections[ws.username] = ws;
   }
   // When a new connection is made, send a message to the client
   ws.send(JSON.stringify({ message: 'Connected to WebSocket server' }));
@@ -93,21 +89,38 @@ wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
     const messageStr = typeof message === 'string' ? message : message.toString();
     const data = JSON.parse(messageStr);
     if (data.type === 'game-invite') {
-      const invitedUserWs = activeConnections[data.invitedUserId];
-      if (invitedUserWs) {
-        invitedUserWs.send(message);
+      const recievingUserWs = activeConnections[data.recievingUser];
+      if (recievingUserWs) {
+        recievingUserWs.send(message);
       }
     } else if (data.type === 'game-invite-response') {
-      const inviterUserWs = activeConnections[data.inviterUserId];
-      if (inviterUserWs) {
-        inviterUserWs.send(message);
+      if (ws.username) {
+        const initiatingUserWs = activeConnections[data.recievingUser];
+        if (initiatingUserWs) {
+          if (data.accepted) {
+            const recievingUserWs = activeConnections[data.initiatingUser];
+            if (recievingUserWs) {
+              if (initiatingUserWs.readyState === WebSocket.OPEN || recievingUserWs.readyState === WebSocket.OPEN) {
+                data.type = 'game-start';
+                const newMessage = JSON.stringify(data);
+
+                initiatingUserWs.send(newMessage);
+                recievingUserWs.send(newMessage);
+              } else {
+                data.type = 'game-decline'
+                const newMessage = JSON.stringify(data);
+                recievingUserWs.send(newMessage);
+              }
+            }
+          } 
+        }
       }
     }
   });
 
   ws.on('close', () => {
-    if (ws.userId) {
-      delete activeConnections[ws.userId];
+    if (ws.username) {
+      delete activeConnections[ws.username];
     }
   });
 });
