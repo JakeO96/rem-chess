@@ -51,7 +51,7 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
   useEffect(() => {
     if (lastMessage !== null) {
       setMessageHistory((prev) => prev.concat(lastMessage.data));
-      const data = JSON.parse(lastMessage.data);
+      const data = typeof lastMessage.data === 'object' ? JSON.stringify(lastMessage.data) : lastMessage.data
       if (data.type === 'game-invite') {
           const accepted = window.confirm(`You have been invited to a game by ${data.inviterUsername}. Do you accept?`);
           const responseMessage = JSON.stringify({ type: 'game-invite-response', accepted, recievingUser: data.initiatingUser, initiatingUser: data.recievingUser });
@@ -93,14 +93,6 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
       ) : (
         <p>No users are currently logged in.</p>
       )}
-
-    <span>The WebSocket is currently {connectionStatus}</span>
-      {lastMessage ? <span>Last message: {lastMessage.data}</span> : null}
-      <ul>
-        {messageHistory.map((message, idx) => (
-          <span key={idx}>{message ? message : null}</span>
-        ))}
-      </ul>
     </>
   )
 }
