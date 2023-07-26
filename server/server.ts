@@ -91,31 +91,44 @@ wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
     if (data.type === 'game-invite') {
       const recievingUserWs = activeConnections[data.recievingUser];
       if (recievingUserWs) {
-        recievingUserWs.send(message);
+        if (recievingUserWs.readyState === WebSocket.OPEN) {
+          recievingUserWs.send(message);
+        }
       }
     } else if (data.type === 'game-invite-response') {
       if (ws.username) {
         const initiatingUserWs = activeConnections[data.recievingUser];
         if (initiatingUserWs) {
-          if (data.accepted) {
-            const recievingUserWs = activeConnections[data.initiatingUser];
-            if (recievingUserWs) {
+          const recievingUserWs = activeConnections[data.initiatingUser];
+          if (recievingUserWs) {
+            if (data.accepted) {
               if (initiatingUserWs.readyState === WebSocket.OPEN || recievingUserWs.readyState === WebSocket.OPEN) {
-                data.type = 'game-start';
+                data.type = 'create-game';
                 const newMessage = JSON.stringify(data);
-
-                initiatingUserWs.send(newMessage);
                 recievingUserWs.send(newMessage);
-              } else {
-                data.type = 'game-decline'
+              }
+            } else {
+              if (recievingUserWs.readyState === WebSocket.OPEN) {
+                data.type = 'game-decline';
                 const newMessage = JSON.stringify(data);
                 recievingUserWs.send(newMessage);
               }
             }
-          } 
+          }
         }
       }
-    }
+    } else if (data.type === 'game-created') {
+      if (ws.username) {
+        const initiatingUserWs = activeConnections[data.recievingUser];
+        const recievingUserWs = activeConnections[data.recievingUser];
+        if (initiatingUserWs && recievingUserWs) {
+          data.type = 'start-game'
+          const newMessage = JSON.stringify(data);
+          initiatingUserWs.send(newMessage);
+          recievingUserWs.send(newMessage);
+        }
+      }     
+    } 
   });
 
   ws.on('close', () => {

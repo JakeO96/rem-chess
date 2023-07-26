@@ -13,19 +13,19 @@ interface RequestWithUser extends Request {
 //@route POST /api/game/create-game
 //@access private
 const createGame = asyncHandler( async (req: RequestWithUser, res: Response) => {
-  const { player1: hero_username, player2: opponent_username } = req.body;
-  if ( !opponent_username ) {
+  const startGameData = req.body;
+  if ( !startGameData.recievingUser || !startGameData.initiatingUser ) {
     res.status(HttpStatusCode.VALIDATION_ERROR);
     throw new Error("Missing required fields");
   }
 
-  const opponent = await User.findOne({ username: opponent_username });
+  const opponent = await User.findOne({ username: startGameData.recievingUser });
   if (!opponent) {
     res.status(HttpStatusCode.VALIDATION_ERROR);
     throw new Error("Some user does not exist");
   }
 
-  const hero = await User.findOne({ username: hero_username});
+  const hero = await User.findOne({ username: startGameData.initiatingUser});
   if (!hero){
     res.status(HttpStatusCode.VALIDATION_ERROR);
     throw new Error("Some user does not exist");
