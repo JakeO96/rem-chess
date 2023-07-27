@@ -6,9 +6,18 @@ import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { Navigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import Cookies from "js-cookie";
+import { JsonObject, JsonValue } from "react-use-websocket/dist/lib/types";
 
 interface StartGamePortalProps {
   expressApi: ExpressAPI;
+}
+
+interface StartGameMessageObject extends JsonObject {
+  type: string;
+  accepted?: boolean;
+  initiatingUser: string;
+  recievingUser: string;
+  gameId?: string;
 }
 
 export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
@@ -17,13 +26,12 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
   const [users, setUsers] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [socketUrl, setSocketUrl] = useState('ws://localhost:3001');
-  const [messageHistory, setMessageHistory] = useState<string[]>([]);
   const { username } = useContext(AuthContext)
   const { 
     sendMessage, 
-    lastMessage, 
+    lastMessage,
     readyState 
-  } = useWebSocket(socketUrl, { 
+  } = useWebSocket<StartGameMessageObject>(socketUrl, { 
     onOpen: () => console.log('opened'), 
     shouldReconnect: (closeEvent) => true,
   });
@@ -49,23 +57,42 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
   }, [expressApi]);
 
   useEffect(() => {
-    if (lastMessage !== null) {
-      setMessageHistory((prev) => prev.concat(lastMessage.data));
-      const data = typeof lastMessage.data === 'object' ? JSON.stringify(lastMessage.data) : lastMessage.data
+    function handleIncomingData(data: StartGameMessageObject) {
       if (data.type === 'game-invite') {
-          const accepted = window.confirm(`You have been invited to a game by ${data.inviterUsername}. Do you accept?`);
-          const responseMessage = JSON.stringify({ type: 'game-invite-response', accepted, recievingUser: data.initiatingUser, initiatingUser: data.recievingUser });
-          sendMessage(responseMessage);
-      } else if (data.type === 'game-start') {
+        const accepted = window.confirm(`You have been invited to a game by ${data.inviterUsername}. Do you accept?`);
+        const responseMessage = JSON.stringify({ type: 'game-invite-response', accepted, recievingUser: data.initiatingUser, initiatingUser: data.recievingUser });
+        sendMessage(responseMessage);
+      } else if (data.type === 'create-game') {
+        console.log(data)
         expressApi.createGame(data, ((gameId) => {
           Cookies.set('activeGameId', gameId);
-          <Navigate to={`/game/${data.gameId}`} />;
+          const responseMessage = JSON.stringify({ type: 'game-created', recievingUser: data.initiatingUser, initiatingUser: data.recievingUser})
+          sendMessage(responseMessage);
         }))
+      } else if (data.type === 'start-game') {
+          const gameId = Cookies.get('activeGameId');
+          <Navigate to={`game/${gameId}`} />
       } else if (data.type === 'game-decline') {
         alert(`${data.initiatingUser} declined to start a game.`);
       }
     }
-  }, [lastMessage, setMessageHistory, sendMessage, expressApi]);
+
+    if (lastMessage !== null) {
+      if (lastMessage.data instanceof Blob) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === 'string') {
+            const data = JSON.parse(reader.result);
+            handleIncomingData(data);
+          }
+        };
+        reader.readAsText(lastMessage.data);
+      } else {
+        const data = JSON.parse(lastMessage.data);
+        handleIncomingData(data);
+      }
+    }
+  }, [lastMessage, expressApi, sendMessage]);
 
   const handleUsernameClick = useCallback((evt: React.MouseEvent<HTMLButtonElement>) => {
     const player2 = evt.currentTarget.dataset.username;
