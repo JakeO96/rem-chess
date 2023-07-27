@@ -82,7 +82,7 @@ wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
     ws.username = req.user.username;
     activeConnections[ws.username] = ws;
   }
-  // When a new connection is made, send a message to the client
+
   ws.send(JSON.stringify({ message: 'Connected to WebSocket server' }));
 
   ws.on('message', (message) => {
@@ -116,11 +116,13 @@ wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
             }
           }
         }
+      } else {
+        console.log('failed at ws.username check');
       }
     } else if (data.type === 'game-created') {
       if (ws.username) {
         const initiatingUserWs = activeConnections[data.recievingUser];
-        const recievingUserWs = activeConnections[data.recievingUser];
+        const recievingUserWs = activeConnections[data.initiatingUser];
         if (initiatingUserWs && recievingUserWs) {
           data.type = 'start-game'
           const newMessage = JSON.stringify(data);

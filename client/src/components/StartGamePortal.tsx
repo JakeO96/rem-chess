@@ -1,12 +1,9 @@
 import { FC, useCallback, useContext, useEffect, useState } from "react"
-//import { useNavigate } from 'react-router-dom'
 import ExpressAPI from "../api/express-api";
-//import { AuthContext } from "../context/AuthContext";
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { Navigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import Cookies from "js-cookie";
-import { JsonObject, JsonValue } from "react-use-websocket/dist/lib/types";
+import { JsonObject } from "react-use-websocket/dist/lib/types";
 
 interface StartGamePortalProps {
   expressApi: ExpressAPI;
@@ -23,6 +20,8 @@ interface StartGameMessageObject extends JsonObject {
 export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
   console.log('StartGamePortal render');
 
+  const [navigateReady, setNavigateReady] = useState<boolean>(false);
+  const [newGameId, setNewGameId] = useState<string>('');
   const [users, setUsers] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [socketUrl, setSocketUrl] = useState('ws://localhost:3001');
@@ -63,15 +62,15 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
         const responseMessage = JSON.stringify({ type: 'game-invite-response', accepted, recievingUser: data.initiatingUser, initiatingUser: data.recievingUser });
         sendMessage(responseMessage);
       } else if (data.type === 'create-game') {
-        console.log(data)
         expressApi.createGame(data, ((gameId) => {
-          Cookies.set('activeGameId', gameId);
-          const responseMessage = JSON.stringify({ type: 'game-created', recievingUser: data.initiatingUser, initiatingUser: data.recievingUser})
+          const responseMessage = JSON.stringify({ type: 'game-created', recievingUser: data.initiatingUser, initiatingUser: data.recievingUser, gameId: gameId})
           sendMessage(responseMessage);
         }))
       } else if (data.type === 'start-game') {
-          const gameId = Cookies.get('activeGameId');
-          <Navigate to={`game/${gameId}`} />
+          if (data.gameId) {
+            setNewGameId(data.gameId)
+          }
+          setNavigateReady(true);
       } else if (data.type === 'game-decline') {
         alert(`${data.initiatingUser} declined to start a game.`);
       }
@@ -92,7 +91,7 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
         handleIncomingData(data);
       }
     }
-  }, [lastMessage, expressApi, sendMessage]);
+  }, [lastMessage, expressApi, sendMessage, newGameId]);
 
   const handleUsernameClick = useCallback((evt: React.MouseEvent<HTMLButtonElement>) => {
     const player2 = evt.currentTarget.dataset.username;
@@ -102,24 +101,28 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
 
   return (
     <>
-      {isLoading ? (
-        <p>Loading...</p>
-      ) : users.length > 0 ? (
-        <ul>
-          {users.map((username, index) => (
-            <li key={index}>
-              <button 
-                disabled={readyState !== ReadyState.OPEN} 
-                data-username={username} 
-                onClick={handleUsernameClick}>
-                {username}
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No users are currently logged in.</p>
-      )}
+      {
+      navigateReady ? (
+        <Navigate to={`game/${newGameId}`} />
+      ) :  isLoading ? (
+          <p>Loading...</p>
+        ) : users.length > 0 ? (
+          <ul>
+            {users.map((username, index) => (
+              <li key={index}>
+                <button 
+                  disabled={readyState !== ReadyState.OPEN} 
+                  data-username={username} 
+                  onClick={handleUsernameClick}>
+                  {username}
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No users are currently logged in.</p>
+        )
+      }
     </>
   )
 }

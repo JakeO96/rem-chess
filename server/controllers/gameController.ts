@@ -13,6 +13,7 @@ interface RequestWithUser extends Request {
 //@route POST /api/game/create-game
 //@access private
 const createGame = asyncHandler( async (req: RequestWithUser, res: Response) => {
+  console.log("createGame ine express-api firing")
   const startGameData = req.body;
   if ( !startGameData.recievingUser || !startGameData.initiatingUser ) {
     res.status(HttpStatusCode.VALIDATION_ERROR);
