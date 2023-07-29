@@ -28,6 +28,10 @@ interface ActiveConnections {
   [key: string]: ExtendedWebSocket;
 }
 
+interface ActiveGames {
+  [key: string]: string[];
+}
+
 connectDb();
 const app = express();
 const port = process.env.PORT || 3001;
@@ -75,7 +79,8 @@ const wss = new WebSocket.Server({
   } 
 });
 
-const activeConnections: ActiveConnections = {};
+let activeConnections: ActiveConnections = {};
+let activeGames: ActiveGames  = {};
 
 wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
   if (req.user && req.user.username) {
@@ -121,6 +126,7 @@ wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
       }
     } else if (data.type === 'game-created') {
       if (ws.username) {
+        activeGames[data.gameId] = [data.recievingUser, data.initiatingUser];
         const initiatingUserWs = activeConnections[data.recievingUser];
         const recievingUserWs = activeConnections[data.initiatingUser];
         if (initiatingUserWs && recievingUserWs) {
@@ -130,7 +136,14 @@ wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
           recievingUserWs.send(newMessage);
         }
       }     
-    } 
+    } /**else if (data.type === 'get-game-players') {
+      if (ws.username) {
+        const [recievingUser, initiatingUser]: string[] = activeGames[data.gameId];
+        data.type = 'game-player-usernames'
+        const newMessage = JSON.stringify({type: data.type, gameId: data.gameId, initiatingUser: initiatingUser, recievingUser: recievingUser});
+        ws.send(newMessage);
+      }
+    }*/
   });
 
   ws.on('close', () => {

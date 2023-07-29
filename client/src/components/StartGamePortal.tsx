@@ -4,6 +4,7 @@ import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { Navigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { JsonObject } from "react-use-websocket/dist/lib/types";
+import { GameContext } from "../context/GameContext";
 
 interface StartGamePortalProps {
   expressApi: ExpressAPI;
@@ -21,11 +22,11 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
   console.log('StartGamePortal render');
 
   const [navigateReady, setNavigateReady] = useState<boolean>(false);
-  const [newGameId, setNewGameId] = useState<string>('');
   const [users, setUsers] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [socketUrl, setSocketUrl] = useState('ws://localhost:3001');
   const { username } = useContext(AuthContext)
+  const { gameId, setGameId, setInitiatingUser, setReceivingUser } = useContext(GameContext)
   const { 
     sendMessage, 
     lastMessage,
@@ -68,7 +69,9 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
         }))
       } else if (data.type === 'start-game') {
           if (data.gameId) {
-            setNewGameId(data.gameId)
+            setGameId(data.gameId);
+            setInitiatingUser(data.initiatingUser);
+            setReceivingUser(data.recievingUser);
           }
           setNavigateReady(true);
       } else if (data.type === 'game-decline') {
@@ -91,7 +94,7 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
         handleIncomingData(data);
       }
     }
-  }, [lastMessage, expressApi, sendMessage, newGameId]);
+  }, [lastMessage, expressApi, sendMessage, setGameId, setInitiatingUser, setReceivingUser]);
 
   const handleUsernameClick = useCallback((evt: React.MouseEvent<HTMLButtonElement>) => {
     const player2 = evt.currentTarget.dataset.username;
@@ -103,7 +106,7 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
     <>
       {
       navigateReady ? (
-        <Navigate to={`game/${newGameId}`} />
+        <Navigate to={`game/${gameId}`} />
       ) :  isLoading ? (
           <p>Loading...</p>
         ) : users.length > 0 ? (

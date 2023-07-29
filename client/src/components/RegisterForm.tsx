@@ -144,7 +144,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ expressApi }) => {
               </button>
             </div> 
           ),
-          SUCCESS: <Navigate to='/new-account-redirect-to-login' />,
+          SUCCESS: <Navigate to='/new-user-redirect-to-login' />,
           ERROR: (
             <div className="w-full flex justify-center">
               <button type='submit' className="whitespace-nowrap inline-flex items-center justify-center font-semibold ease-in duration-200 rounded-full outline outline-noct-blue text-noct-blue bg-inherit w-6/12 my-3 hover:bg-noct-blue hover:text-noct-white hover:outline-none">

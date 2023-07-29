@@ -10,6 +10,10 @@ type PlainFormFieldProps = {
   required: boolean;
 };
 
+interface RecordCheckResponse extends Response {
+  exists: boolean;
+}
+
 const PlainFormField: React.FC<PlainFormFieldProps> = ({ 
   placeholder, 
   name, 
@@ -164,8 +168,9 @@ const useFormField = (
       return;
     }
     await serverFunction(name, value)
-      .then((res: RecordCheckResponse) => {
-        if (res.exists) {
+      .then(async (res: RecordCheckResponse) => {
+        const data = await res.json();
+        if (data.exists) {
           setValue(value);
           error = `${name} already in use`;
           setError(error);
@@ -182,7 +187,4 @@ const useFormField = (
   return { value, error, handleChange, handleBlur };
 };
 
-interface RecordCheckResponse {
-  exists: boolean;
-}
 export { PlainFormField, ValidateFormField, ServerConnectedFormField }
