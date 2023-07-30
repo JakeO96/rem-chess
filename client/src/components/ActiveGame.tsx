@@ -1,5 +1,4 @@
-import MainLayout from "./MainLayout"
-import { Player, Piece, Pawn, Rook, Knight, Bishop, Queen, King, assignBlackPieces, assignWhitePieces, grid } from '../utils/game-utils'
+import { Piece, Pawn, Rook, Knight, Bishop, Queen, King, grid } from '../utils/game-utils'
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { GameContext } from "../context/GameContext";
 
@@ -7,61 +6,47 @@ interface GameState {
   [key: string]: [Piece | null, number];
 }
 
+interface ChessBoardProps {
+  gameState: GameState;
+  grid: string[][];
+}
+
+const produceEmptyBoard = () => {
+  let cordCount = 0;
+  const newGameState: GameState = {};
+  for (const col of grid) {
+    for (const cord of col) {
+      newGameState[cord] = [null, cordCount];
+    }
+    cordCount += 1;
+  }
+  return newGameState;
+}
+
 export const ActiveGame: React.FC<{}> = () => {
 
-  const { initiatingUser, receivingUser } = useContext(GameContext);
-  const [gameState, setGameState] = useState<GameState>({});
-  const [player1, setPlayer1] = useState<Player>(new Player(initiatingUser, '', [], []));
-  const [player2, setPlayer2] = useState<Player>(new Player(receivingUser, '', [], []));
+  const { initiatingUser: player1, receivingUser: player2 } = useContext(GameContext);
+  const [gameState, setGameState] = useState<GameState>(produceEmptyBoard());
   
-  useEffect(() => {
-    produceEmptyBoard();
-    randomlyAssignWhite();
-    setPiecesOnBoard();
-  }, []);
-
-  const produceEmptyBoard = useCallback(() => {
-    let coordCount = 0;
-    const newGameState: GameState = {};
-    for (const col of grid) {
-      for (const cord of col) {
-        newGameState[cord] = [null, coordCount];
-      }
-      coordCount += 1;
-    }
-    setGameState(newGameState);
-  }, []);
-
-  const randomlyAssignWhite = useCallback(() => {
-    const r = Math.floor(Math.random() * 2);
-    if (r === 0) {
-      assignWhitePieces(grid, player1);
-      player1.color = 'white';
-      assignBlackPieces(grid, player2);
-      player2.color = 'black';
-    } else {
-      assignWhitePieces(grid, player2);
-      player2.color = 'white';
-      assignBlackPieces(grid, player1);
-      player1.color = 'black';
-    }
-  }, [player1, player2]);
 
   const setPiecesOnBoard = useCallback(() => {
-    const allPieces = player1.alive.concat(player2.alive);
-    const allPositions = allPieces.map(p => p.position);
-    const newGameState = {...gameState};
-    for (const spot in newGameState) {
-      if (allPositions.includes(spot)) {
-        for (const p of allPieces) {
-          if (p.position === spot) {
-            newGameState[spot][0] = p;
+    if (player1 && player2) {
+      const allPieces = player1.alive.concat(player2.alive);
+      const allPositions = allPieces.map(p => p.position);
+      const newGameState = {...gameState};
+      for (const spot in newGameState) {
+        if (allPositions.includes(spot)) {
+          for (const p of allPieces) {
+            if (p.position === spot) {
+              newGameState[spot][0] = p;
+            }
           }
         }
       }
+      setGameState(newGameState);
     }
-    setGameState(newGameState);
-  }, [gameState, player1, player2]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [player1, player2]);
 
   const process_move = (start: string, end: string): boolean => {
     let copy_state = {...gameState};
@@ -93,7 +78,7 @@ export const ActiveGame: React.FC<{}> = () => {
       if (copy_state[adj_end][0] !== null) {
         const piece = copy_state[adj_end][0];
         // update the alive and grave list for player losing a piece
-        if (piece) {
+        if (piece && player1 && player2) {
           if (player1.alive.includes(piece)) {
             player1.grave.push(piece);
             player1.alive = player1.alive.filter(item => item !== piece);
@@ -118,13 +103,14 @@ export const ActiveGame: React.FC<{}> = () => {
                 }
             });
           } else {
-            player2.alive.forEach((p) => {
+            if (player2) {
+              player2.alive.forEach((p) => {
                 if (p.position === adj_start) {
                     p.position = adj_end;
                 }
             });
+            }
           }
-
         }
       }
       setGameState(copy_state);
@@ -134,16 +120,40 @@ export const ActiveGame: React.FC<{}> = () => {
     return true;
   }
 
-  const renderBoard = (): JSX.Element => {
-    // This function should return JSX that represents the board.
-    // This implementation depends on how you want to render the board.
-    // For simplicity, let's assume we're returning an empty div.
-    return <div></div>;
+  useEffect(() => {
+    setPiecesOnBoard();
+  }, [setPiecesOnBoard]);
+
+  return (
+    <>
+      {Object.keys(gameState).length === 64 && <ChessBoard gameState={gameState} grid={grid} />}
+    </>
+  );
+};
+
+const ChessBoard: React.FC<ChessBoardProps> = ({ gameState, grid }) => {
+  const chessBoard = [];
+
+  for (let row_num = 0; row_num < 8; row_num++) {
+    let row = [];
+    for (let col_num = 0; col_num < 8; col_num++) {
+      let spot_piece = gameState[grid[col_num][row_num]][0];
+      let squareColor = row_num % 2 === 0 
+        ? col_num % 2 === 0 ? 'bg-black-square text-white-square' : 'bg-white-square text-black-square' 
+        : col_num % 2 === 0 ? 'bg-white-square text-black-square' : 'bg-black-square text-white-square';
+
+      row.push(
+        <div className={`w-square h-square flex items-center justify-center ${squareColor}`}>
+          {spot_piece ? spot_piece.name : ''}
+        </div>
+      );
+    }
+    chessBoard.push(<div className="w-screen flex items-center justify-center">{row}</div>);
   }
 
   return (
-    <div>
-      {renderBoard()}
+    <div className="chess-board">
+      {chessBoard}
     </div>
   );
-};
+}

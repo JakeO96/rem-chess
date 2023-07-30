@@ -1,17 +1,18 @@
 import { createContext, useState, ReactNode } from 'react';
+import { Player } from '../utils/game-utils';
 
 type GameContextType = {
-  initiatingUser: string;
-  receivingUser: string;
+  initiatingUser: Player | undefined;
+  receivingUser: Player | undefined;
   gameId: string;
   setGameId: React.Dispatch<React.SetStateAction<string>>;
-  setInitiatingUser: React.Dispatch<React.SetStateAction<string>>;
-  setReceivingUser: React.Dispatch<React.SetStateAction<string>>;
+  setInitiatingUser: React.Dispatch<React.SetStateAction<Player | undefined>>;
+  setReceivingUser: React.Dispatch<React.SetStateAction<Player | undefined>>;
 };
 
 export const GameContext = createContext<GameContextType>({
-  initiatingUser: '',
-  receivingUser: '',
+  initiatingUser: undefined,
+  receivingUser: undefined,
   gameId: '',
   setGameId: () => {}, // default function, will be overwritten by Provider value
   setInitiatingUser: () => {},
@@ -23,8 +24,8 @@ type GameProviderProps = {
 };
 
 export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
-  const [initiatingUser, setInitiatingUser] = useState<string>('');
-  const [receivingUser, setReceivingUser] = useState<string>('');
+  const [initiatingUser, setInitiatingUser] = useState<Player | undefined>(undefined);
+  const [receivingUser, setReceivingUser] = useState<Player | undefined>(undefined);
   const [gameId, setGameId] = useState<string>('');
 
   return (

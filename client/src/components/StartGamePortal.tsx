@@ -5,6 +5,7 @@ import { Navigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { JsonObject } from "react-use-websocket/dist/lib/types";
 import { GameContext } from "../context/GameContext";
+import { Player, assignBlackPieces, assignWhitePieces, grid } from "../utils/game-utils";
 
 interface StartGamePortalProps {
   expressApi: ExpressAPI;
@@ -57,6 +58,24 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
   }, [expressApi]);
 
   useEffect(() => {
+    function randomlyAssignWhite() {
+      let player1 = new Player('', '', [], []);
+      let player2 = new Player('', '', [], []);
+      const r = Math.floor(Math.random() * 2);
+      if (r === 0) {
+        assignWhitePieces(grid, player1);
+          player1.color = 'white';
+          assignBlackPieces(grid, player2);
+          player2.color = 'black';
+        } else {
+          assignWhitePieces(grid, player2);
+          player2.color = 'white';
+          assignBlackPieces(grid, player1);
+          player1.color = 'black';
+        }
+      return [player1, player2];
+    }
+
     function handleIncomingData(data: StartGameMessageObject) {
       if (data.type === 'game-invite') {
         const accepted = window.confirm(`You have been invited to a game by ${data.inviterUsername}. Do you accept?`);
@@ -68,11 +87,14 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
           sendMessage(responseMessage);
         }))
       } else if (data.type === 'start-game') {
+          let [player1, player2] = randomlyAssignWhite();
+          player1.name = data.initiatingUser;
+          player2.name = data.initiatingUser
           if (data.gameId) {
             setGameId(data.gameId);
-            setInitiatingUser(data.initiatingUser);
-            setReceivingUser(data.recievingUser);
           }
+          setInitiatingUser(player1);
+          setReceivingUser(player2);
           setNavigateReady(true);
       } else if (data.type === 'game-decline') {
         alert(`${data.initiatingUser} declined to start a game.`);
@@ -106,7 +128,7 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
     <>
       {
       navigateReady ? (
-        <Navigate to={`game/${gameId}`} />
+        <Navigate to={`/game/${gameId}`} />
       ) :  isLoading ? (
           <p>Loading...</p>
         ) : users.length > 0 ? (

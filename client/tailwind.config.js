@@ -29,6 +29,20 @@ module.exports = {
       '2xl': '1536px',
       'max': '1920px',
     },
+    width: {
+      'square': '4rem',
+    },
+    height: {
+      'square': '4rem',
+    },
+    backgroundColor: {
+      'black-square': 'black',
+      'white-square': 'white',
+    },
+    textColor: {
+      'black-square': 'white',
+      'white-square': 'black',
+    },
   },
   plugins: [
         require('@tailwindcss/forms')
