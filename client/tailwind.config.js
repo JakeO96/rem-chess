@@ -36,8 +36,8 @@ module.exports = {
       'square': '4rem',
     },
     backgroundColor: {
-      'black-square': 'black',
-      'white-square': 'white',
+      'black-square': '#66696B',
+      'white-square': '#E7ECF1',
     },
     textColor: {
       'black-square': 'white',

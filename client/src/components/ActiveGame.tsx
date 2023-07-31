@@ -1,6 +1,34 @@
 import { Piece, Pawn, Rook, Knight, Bishop, Queen, King, grid } from '../utils/game-utils'
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { GameContext } from "../context/GameContext";
+import blackPawn from '../utils/game-piece-graphics/black-pawn.svg';
+import blackKing from '../utils/game-piece-graphics/black-king.svg';
+import blackQueen from '../utils/game-piece-graphics/black-queen.svg';
+import blackBishop from '../utils/game-piece-graphics/black-bishop.svg';
+import blackKnight from '../utils/game-piece-graphics/black-knight.svg';
+import blackRook from '../utils/game-piece-graphics/black-rook.svg';
+import whitePawn from '../utils/game-piece-graphics/white-pawn.svg';
+import whiteKing from '../utils/game-piece-graphics/white-king.svg';
+import whiteQueen from '../utils/game-piece-graphics/white-queen.svg';
+import whiteBishop from '../utils/game-piece-graphics/white-bishop.svg';
+import whiteKnight from '../utils/game-piece-graphics/white-knight.svg';
+import whiteRook from '../utils/game-piece-graphics/white-rook.svg';
+
+const pieceSVGs = {
+  blackPawn: blackPawn,
+  blackKing: blackKing,
+  blackQueen: blackQueen,
+  blackBishop: blackBishop,
+  blackKnight: blackKnight,
+  blackRook: blackRook,
+  whitePawn: whitePawn,
+  whiteKing: whiteKing,
+  whiteQueen: whiteQueen,
+  whiteBishop: whiteBishop,
+  whiteKnight: whiteKnight,
+  whiteRook: whiteRook,
+}
+
 
 interface GameState {
   [key: string]: [Piece | null, number];
@@ -139,12 +167,12 @@ const ChessBoard: React.FC<ChessBoardProps> = ({ gameState, grid }) => {
     for (let col_num = 0; col_num < 8; col_num++) {
       let spot_piece = gameState[grid[col_num][row_num]][0];
       let squareColor = row_num % 2 === 0 
-        ? col_num % 2 === 0 ? 'bg-black-square text-white-square' : 'bg-white-square text-black-square' 
-        : col_num % 2 === 0 ? 'bg-white-square text-black-square' : 'bg-black-square text-white-square';
+        ? col_num % 2 === 0 ? 'bg-black-square' : 'bg-white-square' 
+        : col_num % 2 === 0 ? 'bg-white-square' : 'bg-black-square';
 
       row.push(
         <div className={`w-square h-square flex items-center justify-center ${squareColor}`}>
-          {spot_piece ? spot_piece.name : ''}
+          {spot_piece ? <img src={pieceSVGs[spot_piece.pieceName as keyof typeof pieceSVGs]} alt={spot_piece.pieceName} className={spot_piece.isWhite ? 'noct-white' : 'noct-black'} /> : ''}
         </div>
       );
     }

@@ -32,10 +32,12 @@ export class Player {
 
 export abstract class Piece {
   constructor(
-    public name: string,
+    public trackerTag: string,
+    public pieceName: string,
     public position: string,
     public moved: boolean,
     public player: Player,
+    public isWhite: boolean,
   ) { }
 
   get_all_diagonal(grid: string[][], state: any, col: number, row: number): string[] {
@@ -198,32 +200,32 @@ export class King extends Piece {
 
 export const assignWhitePieces = (grid: string[][], player: Player): void => {
   for (let col of grid) {
-    player.alive.push(new Pawn('wP', col[6], false, player));
+    player.alive.push(new Pawn('wP', 'whitePawn', col[6], false, player, true));
   }
   player.alive.push(
-    new Rook('wR', grid[0][7], false, player),
-    new Knight('wN', grid[1][7], false, player),
-    new Bishop('wB', grid[2][7], false, player),
-    new Queen('wQ', grid[3][7], false, player),
-    new King('wK', grid[4][7], false, player),
-    new Bishop('wB', grid[5][7], false, player),
-    new Knight('wN', grid[6][7], false, player),
-    new Rook('wR', grid[7][7], false, player)
+    new Rook('wR', 'whiteRook', grid[0][7], false, player, true),
+    new Knight('wN', 'whiteKnight', grid[1][7], false, player, true),
+    new Bishop('wB', 'whiteBishop', grid[2][7], false, player, true),
+    new Queen('wQ', 'whiteQueen', grid[3][7], false, player, true),
+    new King('wK', 'whiteKing', grid[4][7], false, player, true),
+    new Bishop('wB', 'whiteBishop', grid[5][7], false, player, true),
+    new Knight('wN', 'whiteKnight', grid[6][7], false, player, true),
+    new Rook('wR', 'whiteRook', grid[7][7], false, player, true)
   )
 }
 
 export const assignBlackPieces = (grid: string[][], player: Player): void => {
   for (let col of grid) {
-      player.alive.push(new Pawn('bP', col[1], false, player));
+      player.alive.push(new Pawn('bP', 'blackPawn', col[1], false, player, false));
   }
   player.alive.push(
-      new Rook('bR', grid[0][0], false, player),
-      new Knight('bN', grid[1][0], false, player),
-      new Bishop('bB', grid[2][0], false, player),
-      new Queen('bQ', grid[3][0], false, player),
-      new King('bK', grid[4][0], false, player),
-      new Bishop('bB', grid[5][0], false, player),
-      new Knight('bN', grid[6][0], false, player),
-      new Rook('bR', grid[7][0], false, player)
+      new Rook('bR', 'blackRook', grid[0][0], false, player, false),
+      new Knight('bN', 'blackKnight', grid[1][0], false, player, false),
+      new Bishop('bB', 'blackBishop', grid[2][0], false, player, false),
+      new Queen('bQ', 'blackQueen', grid[3][0], false, player, false),
+      new King('bK', 'blackKing', grid[4][0], false, player, false),
+      new Bishop('bB', 'blackBishop', grid[5][0], false, player, false),
+      new Knight('bN', 'blackKnight', grid[6][0], false, player, false),
+      new Rook('bR', 'blackRook', grid[7][0], false, player, false)
   );
 }
