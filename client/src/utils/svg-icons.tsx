@@ -5,12 +5,12 @@ export interface SvgIcons {
 }
 
 export const svgIcons: SvgIcons = {
-  'black-pawn':( 
+  'blackPawn':( 
     <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">
       <path d="m 22.5,9 c -2.21,0 -4,1.79 -4,4 0,0.89 0.29,1.71 0.78,2.38 C 17.33,16.5 16,18.59 16,21 c 0,2.03 0.94,3.84 2.41,5.03 C 15.41,27.09 11,31.58 11,39.5 H 34 C 34,31.58 29.59,27.09 26.59,26.03 28.06,24.84 29,23.03 29,21 29,18.59 27.67,16.5 25.72,15.38 26.21,14.71 26.5,13.89 26.5,13 c 0,-2.21 -1.79,-4 -4,-4 z" style={{opacity: 1, fill: "#000000", fillOpacity: 1, fillRule: "nonzero", stroke: "#000000", strokeWidth: 1.5, strokeLinecap: "round", strokeLinejoin: "miter", strokeMiterlimit: 4, strokeDasharray: "none", strokeOpacity: 1}}/>
     </svg>
   ),
-  'black-rook': (
+  'blackRook': (
     <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">
       <g style={{opacity: 1, fill: "#000000", fillOpacity: 1, fillRule: "evenodd", stroke: "#000000", strokeWidth: 1.5, strokeLinecap: "round", strokeLinejoin: "round", strokeMiterlimit: 4, strokeDasharray: "none", strokeOpacity: 1}} transform="translate(0,0.3)">
         <path d="M 9,39 L 36,39 L 36,36 L 9,36 L 9,39 z " style={{strokeLinecap: "butt"}}/>
@@ -27,7 +27,7 @@ export const svgIcons: SvgIcons = {
       </g>
     </svg>
   ),
-  'black-knight': (
+  'blackKnight': (
     <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">
       <g style={{opacity: 1, fill: "none", fillOpacity: 1, fillRule: "evenodd", stroke: "#000000", strokeWidth: 1.5, strokeLinecap: "round", strokeLinejoin: "round", strokeMiterlimit: 4, strokeDasharray: "none", strokeOpacity: 1}} transform="translate(0,0.3)">
         <path d="M 22,10 C 32.5,11 38.5,18 38,39 L 15,39 C 15,30 25,32.5 23,18" style={{fill: "#000000", stroke: "#000000"}}/>
@@ -38,7 +38,7 @@ export const svgIcons: SvgIcons = {
       </g>
     </svg>
   ),
-  'black-bishop': (
+  'blackBishop': (
     <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">
       <g style={{opacity: 1, fill: "none", fillRule: "evenodd", fillOpacity: 1, stroke: "#000000", strokeWidth: 1.5, strokeLinecap: "round", strokeLinejoin: "round", strokeMiterlimit: 4, strokeDasharray: "none", strokeOpacity: 1}} transform="translate(0,0.6)">
         <g style={{fill: "#000000", stroke: "#000000", strokeLinecap: "butt"}}>
@@ -50,7 +50,7 @@ export const svgIcons: SvgIcons = {
       </g>
     </svg>
   ),
-  'black-queen': (
+  'blackQueen': (
     <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">
       <g style={{fill: "#000000", stroke: "#000000", strokeWidth: 1.5, strokeLinecap: "round", strokeLinejoin: "round"}}>
         <path d="M 9,26 C 17.5,24.5 30,24.5 36,26 L 38.5,13.5 L 31,25 L 30.7,10.9 L 25.5,24.5 L 22.5,10 L 19.5,24.5 L 14.3,10.9 L 14,25 L 6.5,13.5 L 9,26 z" style={{strokeLinecap: "butt", fill: "#000000"}}/>
@@ -72,7 +72,7 @@ export const svgIcons: SvgIcons = {
       </g>
     </svg>
   ),
-  'black-king': (
+  'blackKing': (
     <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">
       <g style={{fill: "none", fillOpacity: 1, fillRule: "evenodd", stroke: "#000000", strokeWidth: 1.5, strokeLinecap: "round", strokeLinejoin: "round", strokeMiterlimit: 4, strokeDasharray: "none", strokeOpacity: 1}}>
         <path d="M 22.5,11.63 L 22.5,6" style={{fill: "none", stroke: "#000000", strokeLinejoin: "miter"}} id="path6570"/>
@@ -84,7 +84,7 @@ export const svgIcons: SvgIcons = {
       </g>
     </svg>
   ),
-  'white-pawn': (
+  'whitePawn': (
     <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">
       <path 
         d="m 22.5,9 c -2.21,0 -4,1.79 -4,4 0,0.89 0.29,1.71 0.78,2.38 C 17.33,16.5 16,18.59 16,21 c 0,2.03 0.94,3.84 2.41,5.03 C 15.41,27.09 11,31.58 11,39.5 H 34 C 34,31.58 29.59,27.09 26.59,26.03 28.06,24.84 29,23.03 29,21 29,18.59 27.67,16.5 25.72,15.38 26.21,14.71 26.5,13.89 26.5,13 c 0,-2.21 -1.79,-4 -4,-4 z" 
@@ -93,7 +93,7 @@ export const svgIcons: SvgIcons = {
     </svg>
   ),
            
-  'white-rook': (
+  'whiteRook': (
     <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">
       <g style={{opacity: 1, fill: "#ffffff", fillOpacity: 1, fillRule: "evenodd", stroke: "#000000", strokeWidth: 1.5, strokeLinecap: "round", strokeLinejoin: "round", strokeMiterlimit: 4, strokeDasharray: "none", strokeOpacity: 1}} transform="translate(0,0.3)">
         <path d="M 9,39 L 36,39 L 36,36 L 9,36 L 9,39 z " style={{strokeLinecap: "butt"}}/>
@@ -106,7 +106,7 @@ export const svgIcons: SvgIcons = {
       </g>
     </svg>
   ),
-  'white-knight': (
+  'whiteKnight': (
     <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">
       <g style={{opacity: 1, fill: "none", fillOpacity: 1, fillRule: "evenodd", stroke: "#000000", strokeWidth: 1.5, strokeLinecap: "round", strokeLinejoin: "round", strokeMiterlimit: 4, strokeDasharray: "none", strokeOpacity: 1}} transform="translate(0,0.3)">
         <path d="M 22,10 C 32.5,11 38.5,18 38,39 L 15,39 C 15,30 25,32.5 23,18" style={{fill: "#ffffff", stroke: "#000000"}}/>
@@ -116,7 +116,7 @@ export const svgIcons: SvgIcons = {
       </g>
     </svg>
   ),
-  'white-bishop': (
+  'whiteBishop': (
     <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">
       <g style={{opacity: 1, fill: "none", fillRule: "evenodd", fillOpacity: 1, stroke: "#000000", strokeWidth: 1.5, strokeLinecap: "round", strokeLinejoin: "round", strokeMiterlimit: 4, strokeDasharray: "none", strokeOpacity: 1}} transform="translate(0,0.6)">
         <g style={{fill: "#ffffff", stroke: "#000000", strokeLinecap: "butt"}}>
@@ -128,7 +128,7 @@ export const svgIcons: SvgIcons = {
       </g>
     </svg>
   ),
-  'white-queen': (
+  'whiteQueen': (
     <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">
       <g style={{fill: "#ffffff", stroke: "#000000", strokeWidth: 1.5, strokeLinejoin: "round"}}>
         <path d="M 9,26 C 17.5,24.5 30,24.5 36,26 L 38.5,13.5 L 31,25 L 30.7,10.9 L 25.5,24.5 L 22.5,10 L 19.5,24.5 L 14.3,10.9 L 14,25 L 6.5,13.5 L 9,26 z"/>
@@ -143,7 +143,7 @@ export const svgIcons: SvgIcons = {
       </g>
     </svg>
   ),
-  'white-king': (
+  'whiteKing': (
     <svg xmlns="http://www.w3.org/2000/svg" width="45" height="45">
       <g fill="none" fillRule="evenodd" stroke="#000" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5">
         <path strokeLinejoin="miter" d="M22.5 11.63V6M20 8h5"/>
