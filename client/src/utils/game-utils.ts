@@ -1,3 +1,21 @@
+interface GameState {
+  [key: string]: [Piece | null, number];
+}
+
+export interface Player {
+  name: string;
+  color: string;
+  alive: Piece[];
+  grace: Piece[];
+}
+
+interface MoveResult {
+  isValid: boolean;
+  newState: GameState;
+  player1: Player;
+  player2: Player;
+}
+
 export const grid: string[][] = [
   ['A7', 'A6', 'A5', 'A4', 'A3', 'A2', 'A1', 'A0'],
   ['B7', 'B6', 'B5', 'B4', 'B3', 'B2', 'B1', 'B0'],
@@ -8,13 +26,6 @@ export const grid: string[][] = [
   ['G7', 'G6', 'G5', 'G4', 'G3', 'G2', 'G1', 'G0'],
   ['H7', 'H6', 'H5', 'H4', 'H3', 'H2', 'H1', 'H0']
 ];
-
-export interface Player {
-  name: string;
-  color: string;
-  alive: Piece[];
-  grace: Piece[];
-}
 
 export class Player {
   name: string;
@@ -228,4 +239,75 @@ export const assignBlackPieces = (grid: string[][], player: Player): void => {
       new Knight('bN', 'blackKnight', grid[6][0], false, player, false),
       new Rook('bR', 'blackRook', grid[7][0], false, player, false)
   );
+}
+
+export const process_move = (start: string, end: string, gameState: GameState, player1: Player, player2: Player): MoveResult => {
+  let copy_state = {...gameState};
+  let adj_start = start[0] + ((parseInt(start[1]) - 1).toString());
+  let adj_end = end[0] + ((parseInt(end[1]) - 1).toString());
+  let start_col = gameState[adj_start][1];
+  let start_row = 7 - parseInt(adj_start[1]);
+
+  let piece = copy_state[adj_start][0];
+  let all_moves: string[] = [];
+  // find what piece we are moving
+  if (piece instanceof Pawn) {
+      all_moves = piece.validPawnMoves(grid, gameState, start_col, start_row);
+  } else if (piece instanceof Knight) {
+      all_moves = piece.validKnightMoves(grid, gameState, start_col, start_row);
+  } else if (piece instanceof Rook) {
+      all_moves = piece.get_all_straight(grid, gameState, start_col, start_row);
+  } else if (piece instanceof Bishop) {
+      all_moves = piece.get_all_diagonal(grid, gameState, start_col, start_row);
+  } else if (piece instanceof Queen) {
+      all_moves = piece.get_all_straight(grid, gameState, start_col, start_row)
+          .concat(piece.get_all_diagonal(grid, gameState, start_col, start_row));
+  } else if (piece instanceof King) {
+      all_moves = piece.validKingMoves(grid, gameState, start_col, start_row);
+  }
+
+  if (all_moves.includes(adj_end)) {
+    // if the piece moving is taking an opponents piece
+    if (copy_state[adj_end][0] !== null) {
+      const piece = copy_state[adj_end][0];
+      // update the alive and grave list for player losing a piece
+      if (piece && player1 && player2) {
+        if (player1.alive.includes(piece)) {
+          player1.grave.push(piece);
+          player1.alive = player1.alive.filter(item => item !== piece);
+        } else {
+          player2.grave.push(piece);
+          player2.alive = player2.alive.filter(item => item !== piece);
+        }
+      }
+    }
+
+    // update the positions of the pieces on the board
+    copy_state[adj_end][0] = copy_state[adj_start][0];
+    copy_state[adj_start][0] = null;
+    if (copy_state[adj_end][0] !== null) {
+      let piece = copy_state[adj_end][0];
+      if (piece) {
+        piece.position = adj_end;
+        if (player1 === piece.player) {
+          player1.alive.forEach((p) => {
+              if (p.position === adj_start) {
+                  p.position = adj_end;
+              }
+          });
+        } else {
+          if (player2) {
+            player2.alive.forEach((p) => {
+              if (p.position === adj_start) {
+                  p.position = adj_end;
+              }
+          });
+          }
+        }
+      }
+    }
+  } else {
+      return { isValid: false, newState: copy_state, player1: player1, player2: player2 };
+  }
+  return { isValid: true, newState: copy_state, player1: player1, player2: player2 };
 }
