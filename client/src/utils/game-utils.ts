@@ -117,30 +117,34 @@ export abstract class Piece {
 export class Pawn extends Piece {
   validPawnMoves(grid: string[][], state: any, col: number, row: number): string[] {
     let all_moves: string[] = [];
-    if (state[grid[col][row - 1]][0] === null) {
-        all_moves.push(grid[col][row - 1]);
+    // Check the color of the pawn to decide which direction it should move
+    let nextRow = this.isWhite ? row - 1 : row + 1;
+    if (state[grid[col][nextRow]][0] === null) {
+      all_moves.push(grid[col][nextRow]);
     }
-
-    let attacks: string[] = [grid[(col - 1)][(row - 1)], grid[(col + 1)][(row - 1)]];
+  
+    let attacks: string[] = [grid[(col - 1)][nextRow], grid[(col + 1)][nextRow]];
     for (let d of attacks) {
-        if (state[d][0] === null) {
-            continue;
-        } else if (!this.player.alive.includes(state[d][0])) {
-            all_moves.push(d);
-        } else {
-            continue;
-        }
+      if (state[d][0] === null) {
+          continue;
+      } else if (!this.player.alive.includes(state[d][0])) {
+          all_moves.push(d);
+      } else {
+          continue;
+      }
     }
-
-    if (state[grid[col][row]].moved === 0) {
-        if (this.player.color === 'black') {
-            all_moves.push(grid[col][(row - 2)]);
-        } else {
-            all_moves.push(grid[col][(row + 2)]);
-        }
+  
+    // If the pawn hasn't moved yet, it can move two spaces forward
+    if (!this.moved) {
+      nextRow = this.isWhite ? row - 2 : row + 2;
+      // The pawn can move two spaces forward only if both spaces in front of it are empty
+      if (state[grid[col][nextRow]][0] === null && state[grid[col][nextRow + (this.isWhite ? 1 : -1)]][0] === null) {
+        all_moves.push(grid[col][nextRow]);
+      }
     }
+    
     return all_moves;
-}
+  }
 }
 
 export class Rook extends Piece {}
@@ -242,34 +246,43 @@ export const assignBlackPieces = (grid: string[][], player: Player): void => {
 }
 
 export const process_move = (start: string, end: string, gameState: GameState, player1: Player, player2: Player): MoveResult => {
-  let copy_state = {...gameState};
-  let adj_start = start[0] + ((parseInt(start[1]) - 1).toString());
-  let adj_end = end[0] + ((parseInt(end[1]) - 1).toString());
-  let start_col = gameState[adj_start][1];
-  let start_row = 7 - parseInt(adj_start[1]);
+  let copyState = {...gameState};
+  let startPosition = start[0] + start[1];
+  console.log(`adjusted start: ${startPosition}`)
+  let endPosition = end[0] + end[1];
+  console.log(`adjusted start: ${endPosition}`)
+  let startCol = gameState[startPosition][1];
+  console.log(`start column: ${startCol}`)
+  let startRow = 7 - parseInt(startPosition[1]);
+  console.log(`start row: ${startRow}`)
 
-  let piece = copy_state[adj_start][0];
-  let all_moves: string[] = [];
+  let piece = copyState[startPosition][0];
+  console.log('piece VVVV');
+  console.log(piece)
+  let allMoves: string[] = [];
   // find what piece we are moving
   if (piece instanceof Pawn) {
-      all_moves = piece.validPawnMoves(grid, gameState, start_col, start_row);
+      allMoves = piece.validPawnMoves(grid, gameState, startCol, startRow);
   } else if (piece instanceof Knight) {
-      all_moves = piece.validKnightMoves(grid, gameState, start_col, start_row);
+      allMoves = piece.validKnightMoves(grid, gameState, startCol, startRow);
   } else if (piece instanceof Rook) {
-      all_moves = piece.get_all_straight(grid, gameState, start_col, start_row);
+      allMoves = piece.get_all_straight(grid, gameState, startCol, startRow);
   } else if (piece instanceof Bishop) {
-      all_moves = piece.get_all_diagonal(grid, gameState, start_col, start_row);
+      allMoves = piece.get_all_diagonal(grid, gameState, startCol, startRow);
   } else if (piece instanceof Queen) {
-      all_moves = piece.get_all_straight(grid, gameState, start_col, start_row)
-          .concat(piece.get_all_diagonal(grid, gameState, start_col, start_row));
+      allMoves = piece.get_all_straight(grid, gameState, startCol, startRow)
+          .concat(piece.get_all_diagonal(grid, gameState, startCol, startRow));
   } else if (piece instanceof King) {
-      all_moves = piece.validKingMoves(grid, gameState, start_col, start_row);
+      allMoves = piece.validKingMoves(grid, gameState, startCol, startRow);
   }
 
-  if (all_moves.includes(adj_end)) {
+  console.log('all moves after checking vvvv')
+  console.log(allMoves)
+
+  if (allMoves.includes(endPosition)) {
     // if the piece moving is taking an opponents piece
-    if (copy_state[adj_end][0] !== null) {
-      const piece = copy_state[adj_end][0];
+    if (copyState[endPosition][0] !== null) {
+      const piece = copyState[endPosition][0];
       // update the alive and grave list for player losing a piece
       if (piece && player1 && player2) {
         if (player1.alive.includes(piece)) {
@@ -283,23 +296,23 @@ export const process_move = (start: string, end: string, gameState: GameState, p
     }
 
     // update the positions of the pieces on the board
-    copy_state[adj_end][0] = copy_state[adj_start][0];
-    copy_state[adj_start][0] = null;
-    if (copy_state[adj_end][0] !== null) {
-      let piece = copy_state[adj_end][0];
+    copyState[endPosition][0] = copyState[startPosition][0];
+    copyState[startPosition][0] = null;
+    if (copyState[endPosition][0] !== null) {
+      let piece = copyState[endPosition][0];
       if (piece) {
-        piece.position = adj_end;
+        piece.position = endPosition;
         if (player1 === piece.player) {
           player1.alive.forEach((p) => {
-              if (p.position === adj_start) {
-                  p.position = adj_end;
+              if (p.position === startPosition) {
+                  p.position = endPosition;
               }
           });
         } else {
           if (player2) {
             player2.alive.forEach((p) => {
-              if (p.position === adj_start) {
-                  p.position = adj_end;
+              if (p.position === startPosition) {
+                  p.position = endPosition;
               }
           });
           }
@@ -307,7 +320,7 @@ export const process_move = (start: string, end: string, gameState: GameState, p
       }
     }
   } else {
-      return { isValid: false, newState: copy_state, player1: player1, player2: player2 };
+      return { isValid: false, newState: copyState, player1: player1, player2: player2 };
   }
-  return { isValid: true, newState: copy_state, player1: player1, player2: player2 };
+  return { isValid: true, newState: copyState, player1: player1, player2: player2 };
 }

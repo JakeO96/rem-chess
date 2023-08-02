@@ -13,7 +13,8 @@ interface DraggablePieceProps {
 export const ActiveGame: React.FC<{}> = () => {
 
   const { initiatingUser: player1, receivingUser: player2, gameState, setGameState } = useContext(GameContext);
-  console.log(gameState)
+  console.log('activegame component rendering - gamestate is VVVV');
+  console.log(gameState);
 
   const setPiecesOnBoard = useCallback(() => {
     if (player1 && player2) {
@@ -29,8 +30,6 @@ export const ActiveGame: React.FC<{}> = () => {
           }
         }
       }
-      console.log("newGameState in setPiecesOnBoard VVVVVVVVVVVVVVVV")
-      console.log(newGameState);
       setGameState(newGameState);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -55,12 +54,12 @@ const ChessBoard: React.FC<{}> = () => {
     let row = [];
     for (let col_num = 0; col_num < 8; col_num++) {
       if (gameState) {
-        let spot_piece = gameState[grid[col_num][row_num]][0];
+        let position = grid[col_num][row_num];
         let squareColor = row_num % 2 === 0 
         ? col_num % 2 === 0 ? 'bg-black-square' : 'bg-white-square' 
         : col_num % 2 === 0 ? 'bg-white-square' : 'bg-black-square';
         row.push(
-          <DraggablePiece key={`${row_num}-${col_num}`} spot_piece={spot_piece} squareColor={squareColor} />
+          <Square key={`${row_num}-${col_num}`} position={position} squareColor={squareColor} />
         );
       }
     }
@@ -74,28 +73,25 @@ const ChessBoard: React.FC<{}> = () => {
   );
 }
 
-const DraggablePiece: React.FC<DraggablePieceProps> = ({ spot_piece, squareColor }) => {
+// Square component
+const Square: React.FC<{ position: string, squareColor: string }> = ({ position, squareColor }) => {
+  const { initiatingUser: player1, receivingUser: player2, gameState, setInitiatingUser, setReceivingUser, setGameState } = useContext(GameContext);
 
-  const{ initiatingUser: player1, receivingUser: player2, setInitiatingUser, setReceivingUser, gameState, setGameState } = useContext(GameContext);
-
-  const [{ isDragging }, dragRef] = useDrag({
-    type: 'piece',
-    item: { type: 'piece', piece: spot_piece },
-    collect: monitor => ({
-      isDragging: !!monitor.isDragging(),
-    }),
-  })
-
-  const [{ canDrop, isOver }, dropRef] = useDrop({
+  const [, dropRef] = useDrop({
     accept: 'piece',
     drop: (item: any, monitor) => {
-      if (spot_piece) {
+      console.log('drop firing')
+      console.log('spot piece in drop vvvv')
+      console.log(item);
+      if (item) {
         const start = item.piece.position; 
-        const end = spot_piece.position;
+        const end = position;
         let copy_state = {...gameState};
         if (player1 && player2) {
           const moveResult = process_move(start, end, copy_state, player1, player2 )
+          console.log(moveResult)
           if (moveResult.isValid) {
+            item.piece.moved = true;
             setInitiatingUser(moveResult.player1);
             setReceivingUser(moveResult.player2);
             setGameState(moveResult.newState);
@@ -106,19 +102,29 @@ const DraggablePiece: React.FC<DraggablePieceProps> = ({ spot_piece, squareColor
         }
       }
     },
-    collect: (monitor) => ({
-      isOver: !!monitor.isOver(),
-      canDrop: !!monitor.canDrop(),
+  })
+
+  const piece = gameState ? gameState[position][0] : null;
+
+  return (
+    <div ref={dropRef} className={`w-square h-square flex items-center justify-center ${squareColor}`}>
+      {piece ? <DraggablePiece piece={piece} /> : null}
+    </div>
+  );
+};
+
+const DraggablePiece: React.FC<{ piece: Piece }> = ({ piece }) => {
+  const [{ isDragging }, dragRef] = useDrag({
+    type: 'piece',
+    item: { type: 'piece', piece },
+    collect: monitor => ({
+      isDragging: !!monitor.isDragging(),
     }),
   })
 
   return (
-    spot_piece ? (
-      <div ref={dropRef} className={`w-square h-square flex items-center justify-center ${squareColor}`}>
-        <div ref={dragRef}>{svgIcons[spot_piece.pieceName]}</div>
-      </div>
-    ) : (
-      <div ref={dropRef} className={`w-square h-square flex items-center justify-center ${squareColor}`}></div>
-    )
+    <div ref={dragRef}>
+      {svgIcons[piece.pieceName]}
+    </div>
   )
 }
