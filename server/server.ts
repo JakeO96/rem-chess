@@ -136,7 +136,22 @@ wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
           recievingUserWs.send(newMessage);
         }
       }     
-    } 
+    } else if (data.type === 'valid-move') {
+      if (ws.username) {
+        if (activeGames[data.gameId]) {
+          const [recievingUser, initiatingUser] = activeGames[data.gameId];
+          if (data.player === recievingUser) {
+            const newMessage = JSON.stringify({type: 'move-made', newGameState: data.newGameState})
+            const initiatingUserWs = activeConnections[initiatingUser];
+            initiatingUserWs.send(newMessage);
+          } else {
+            const newMessage = JSON.stringify({type: 'move-made', newGameState: data.newGameState})
+            const recievingUserWs = activeConnections[recievingUser];
+            recievingUserWs.send(newMessage);
+          }
+        }
+      }
+    }
   });
 
   ws.on('close', () => {

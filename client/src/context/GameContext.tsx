@@ -1,8 +1,9 @@
-import { createContext, useState, ReactNode, useEffect } from 'react';
+import { createContext, useState, ReactNode, useEffect, useContext } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { Player } from '../utils/game-utils';
 import { Piece, grid } from '../utils/game-utils';
 import { JsonObject } from 'react-use-websocket/dist/lib/types';
+import { AuthContext } from './AuthContext';
 
 export interface StartGameMessageObject extends JsonObject {
   type: string;
@@ -65,27 +66,23 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
   const [receivingUser, setReceivingUser] = useState<Player | undefined>(undefined);
   const [gameId, setGameId] = useState<string>('');
   const [gameState, setGameState] = useState<GameState>(produceEmptyBoard());
-
-  const [socketUrl, setSocketUrl] = useState('ws://localhost:3001');
-  const { 
-    sendMessage, 
-    lastMessage,
-    readyState 
-  } = useWebSocket<StartGameMessageObject>(socketUrl, { 
-    onOpen: () => console.log('opened'), 
-    shouldReconnect: (closeEvent) => true,
-  });
-  const connectionStatus = {
-    [ReadyState.CONNECTING]: 'Connecting',
-    [ReadyState.OPEN]: 'Open',
-    [ReadyState.CLOSING]: 'Closing',
-    [ReadyState.CLOSED]: 'Closed',
-    [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
-  }[readyState];
-
+  const { isLoggedIn } = useContext(AuthContext)
+  const [socketUrl, setSocketUrl] = useState<string>('');
+  
   useEffect(() => {
-    // Add the message handling code here
-  }, [lastMessage]);
+    if (isLoggedIn) {
+      setSocketUrl('ws://localhost:3001');
+    }
+  }, [isLoggedIn]);
+
+  const {
+    sendMessage,
+    lastMessage,
+    readyState
+  } = useWebSocket<StartGameMessageObject>(socketUrl, {
+    onOpen: () => console.log('opened'),
+    shouldReconnect: (closeEvent) => true,
+  }, socketUrl !== '');
 
   return (
     <GameContext.Provider value={{ initiatingUser, receivingUser, gameId, gameState, setGameId, setInitiatingUser, setReceivingUser, setGameState, sendMessage, lastMessage, readyState }}>

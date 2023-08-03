@@ -33,21 +33,20 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
   }, [expressApi]);
 
   useEffect(() => {
-    function randomlyAssignWhite() {
-      let player1 = new Player('', '', [], []);
-      let player2 = new Player('', '', [], []);
+    
+    function randomlyAssignWhite(player1: Player, player2: Player): Player[] {
       const r = Math.floor(Math.random() * 2);
       if (r === 0) {
-        assignWhitePieces(grid, player1);
-          player1.color = 'white';
-          assignBlackPieces(grid, player2);
-          player2.color = 'black';
-        } else {
-          assignWhitePieces(grid, player2);
-          player2.color = 'white';
-          assignBlackPieces(grid, player1);
-          player1.color = 'black';
-        }
+        player1.color = 'white';
+        player2.color = 'black';
+        assignWhitePieces(player1);
+        assignBlackPieces(player2);
+      } else {
+        player1.color = 'black';
+        player2.color = 'white';
+        assignWhitePieces(player2);
+        assignBlackPieces(player1);
+      }
       return [player1, player2];
     }
 
@@ -62,15 +61,15 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
           sendMessage(responseMessage);
         }))
       } else if (data.type === 'start-game') {
-          let [player1, player2] = randomlyAssignWhite();
-          player1.name = data.initiatingUser;
-          player2.name = data.initiatingUser
-          if (data.gameId) {
-            setGameId(data.gameId);
-          }
-          setInitiatingUser(player1);
-          setReceivingUser(player2);
-          setNavigateReady(true);
+        let player1 = new Player(data.initiatingUser, '', [], []);
+        let player2 = new Player(data.recievingUser, '', [], []);
+        let [player1WithPieces, player2WithPieces] = randomlyAssignWhite(player1, player2);
+        if (data.gameId) {
+          setGameId(data.gameId);
+        }
+        setInitiatingUser(player1WithPieces);
+        setReceivingUser(player2WithPieces);
+        setNavigateReady(true);
       } else if (data.type === 'game-decline') {
         alert(`${data.initiatingUser} declined to start a game.`);
       }

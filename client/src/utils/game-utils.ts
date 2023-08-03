@@ -9,11 +9,11 @@ export interface Player {
   grace: Piece[];
 }
 
-interface MoveResult {
+export interface MoveResult {
   isValid: boolean;
   newState: GameState;
-  player1: Player;
-  player2: Player;
+  newPlayer1: Player | null | undefined;
+  newPlayer2: Player | null | undefined;
 }
 
 export const grid: string[][] = [
@@ -47,7 +47,8 @@ export abstract class Piece {
     public pieceName: string,
     public position: string,
     public moved: boolean,
-    public player: Player,
+    public playerName: string,
+    public playerColor: string,
     public isWhite: boolean,
   ) { }
 
@@ -81,7 +82,7 @@ export abstract class Piece {
         } else {
             return this.recurse_straight((looper - 1), end, anchor, grid, state, all_moves, axis);
         }
-    } else if (state[spot][0].player.color === this.player.color) {
+    } else if (state[spot][0].playerColor === this.playerColor) {
         return all_moves;
     } else {
         all_moves.push(spot);
@@ -105,7 +106,7 @@ export abstract class Piece {
         } else {
             return this.recurse_diagonal((col_rec - 1), end, (row_rec + 1), grid, state, all_moves, axis);
         }
-    } else if (state[spot][0].player.color === this.player.color) {
+    } else if (state[spot][0].playerColor === this.playerColor) {
         return all_moves;
     } else {
         all_moves.push(spot);
@@ -124,13 +125,28 @@ export class Pawn extends Piece {
     }
   
     let attacks: string[] = [grid[(col - 1)][nextRow], grid[(col + 1)][nextRow]];
-    for (let d of attacks) {
-      if (state[d][0] === null) {
+    for (let coord of attacks) {
+      const spotPiece = state[coord][0];
+      console.log('spotPiece in validPawnMoves vvvvvvv');
+      console.log(spotPiece);
+      if (spotPiece === null) {
           continue;
-      } else if (!this.player.alive.includes(state[d][0])) {
-          all_moves.push(d);
-      } else {
+      } else if (spotPiece.isWhite) {
+        console.log('firing in validPawnMoves when the piece in the spot is white')
+        if (this.playerColor === 'black') {
+          all_moves.push(coord);
+        } else {
           continue;
+        }
+      } else if (!spotPiece.isWhite) {
+        console.log('firing in validPawnMoves when the piece in the spot is black')
+        console.log(`piece being moved playerColor: ${this.playerColor}`)
+        if (this.playerColor === 'white') {
+          console.log('move ebing pushed')
+          all_moves.push(coord);
+        } else {
+          continue;
+        }
       }
     }
   
@@ -166,7 +182,7 @@ export class Knight extends Piece {
       }
 
       const spot = grid[move[0]][move[1]];
-      if (state[spot][0] === null || state[spot][0].player.color !== this.player?.color) {
+      if (state[spot][0] === null || state[spot][0].playerColor !== this.playerColor) {
         allMoves.push(spot);
       }
     }
@@ -201,7 +217,7 @@ export class King extends Piece {
         const spot = grid[c[0]][c[1]];
         if (state[spot][0] === null) {
           allMoves.push(spot);
-        } else if (state[spot][0].player.color === this.player?.color) {
+        } else if (state[spot][0].playerColor === this.playerColor) {
           continue;
         } else {
           allMoves.push(spot);
@@ -213,114 +229,38 @@ export class King extends Piece {
   }
 }
 
-export const assignWhitePieces = (grid: string[][], player: Player): void => {
+export const assignWhitePieces = (player: Player): void => {
+  const playerName = player.name;
+  const playerColor = player.color;
   for (let col of grid) {
-    player.alive.push(new Pawn('wP', 'whitePawn', col[6], false, player, true));
+    player.alive.push(new Pawn('wP', 'whitePawn', col[6], false, playerName, playerColor, true));
   }
   player.alive.push(
-    new Rook('wR', 'whiteRook', grid[0][7], false, player, true),
-    new Knight('wN', 'whiteKnight', grid[1][7], false, player, true),
-    new Bishop('wB', 'whiteBishop', grid[2][7], false, player, true),
-    new Queen('wQ', 'whiteQueen', grid[3][7], false, player, true),
-    new King('wK', 'whiteKing', grid[4][7], false, player, true),
-    new Bishop('wB', 'whiteBishop', grid[5][7], false, player, true),
-    new Knight('wN', 'whiteKnight', grid[6][7], false, player, true),
-    new Rook('wR', 'whiteRook', grid[7][7], false, player, true)
+    new Rook('wR', 'whiteRook', grid[0][7], false, playerName, playerColor, true),
+    new Knight('wN', 'whiteKnight', grid[1][7], false, playerName, playerColor, true),
+    new Bishop('wB', 'whiteBishop', grid[2][7], false, playerName, playerColor, true),
+    new Queen('wQ', 'whiteQueen', grid[3][7], false, playerName, playerColor, true),
+    new King('wK', 'whiteKing', grid[4][7], false, playerName, playerColor, true),
+    new Bishop('wB', 'whiteBishop', grid[5][7], false, playerName, playerColor, true),
+    new Knight('wN', 'whiteKnight', grid[6][7], false, playerName, playerColor, true),
+    new Rook('wR', 'whiteRook', grid[7][7], false, playerName, playerColor, true)
   )
 }
 
-export const assignBlackPieces = (grid: string[][], player: Player): void => {
+export const assignBlackPieces = (player: Player): void => {
+  const playerName = player.name;
+  const playerColor = player.color;
   for (let col of grid) {
-      player.alive.push(new Pawn('bP', 'blackPawn', col[1], false, player, false));
+      player.alive.push(new Pawn('bP', 'blackPawn', col[1], false, playerName, playerColor, false));
   }
   player.alive.push(
-      new Rook('bR', 'blackRook', grid[0][0], false, player, false),
-      new Knight('bN', 'blackKnight', grid[1][0], false, player, false),
-      new Bishop('bB', 'blackBishop', grid[2][0], false, player, false),
-      new Queen('bQ', 'blackQueen', grid[3][0], false, player, false),
-      new King('bK', 'blackKing', grid[4][0], false, player, false),
-      new Bishop('bB', 'blackBishop', grid[5][0], false, player, false),
-      new Knight('bN', 'blackKnight', grid[6][0], false, player, false),
-      new Rook('bR', 'blackRook', grid[7][0], false, player, false)
+      new Rook('bR', 'blackRook', grid[0][0], false, playerName, playerColor, false),
+      new Knight('bN', 'blackKnight', grid[1][0], false, playerName, playerColor, false),
+      new Bishop('bB', 'blackBishop', grid[2][0], false, playerName, playerColor, false),
+      new Queen('bQ', 'blackQueen', grid[3][0], false, playerName, playerColor, false),
+      new King('bK', 'blackKing', grid[4][0], false, playerName, playerColor, false),
+      new Bishop('bB', 'blackBishop', grid[5][0], false, playerName, playerColor, false),
+      new Knight('bN', 'blackKnight', grid[6][0], false, playerName, playerColor, false),
+      new Rook('bR', 'blackRook', grid[7][0], false, playerName, playerColor, false)
   );
-}
-
-export const process_move = (start: string, end: string, gameState: GameState, player1: Player, player2: Player): MoveResult => {
-  let copyState = {...gameState};
-  let startPosition = start[0] + start[1];
-  console.log(`adjusted start: ${startPosition}`)
-  let endPosition = end[0] + end[1];
-  console.log(`adjusted start: ${endPosition}`)
-  let startCol = gameState[startPosition][1];
-  console.log(`start column: ${startCol}`)
-  let startRow = 7 - parseInt(startPosition[1]);
-  console.log(`start row: ${startRow}`)
-
-  let piece = copyState[startPosition][0];
-  console.log('piece VVVV');
-  console.log(piece)
-  let allMoves: string[] = [];
-  // find what piece we are moving
-  if (piece instanceof Pawn) {
-      allMoves = piece.validPawnMoves(grid, gameState, startCol, startRow);
-  } else if (piece instanceof Knight) {
-      allMoves = piece.validKnightMoves(grid, gameState, startCol, startRow);
-  } else if (piece instanceof Rook) {
-      allMoves = piece.get_all_straight(grid, gameState, startCol, startRow);
-  } else if (piece instanceof Bishop) {
-      allMoves = piece.get_all_diagonal(grid, gameState, startCol, startRow);
-  } else if (piece instanceof Queen) {
-      allMoves = piece.get_all_straight(grid, gameState, startCol, startRow)
-          .concat(piece.get_all_diagonal(grid, gameState, startCol, startRow));
-  } else if (piece instanceof King) {
-      allMoves = piece.validKingMoves(grid, gameState, startCol, startRow);
-  }
-
-  console.log('all moves after checking vvvv')
-  console.log(allMoves)
-
-  if (allMoves.includes(endPosition)) {
-    // if the piece moving is taking an opponents piece
-    if (copyState[endPosition][0] !== null) {
-      const piece = copyState[endPosition][0];
-      // update the alive and grave list for player losing a piece
-      if (piece && player1 && player2) {
-        if (player1.alive.includes(piece)) {
-          player1.grave.push(piece);
-          player1.alive = player1.alive.filter(item => item !== piece);
-        } else {
-          player2.grave.push(piece);
-          player2.alive = player2.alive.filter(item => item !== piece);
-        }
-      }
-    }
-
-    // update the positions of the pieces on the board
-    copyState[endPosition][0] = copyState[startPosition][0];
-    copyState[startPosition][0] = null;
-    if (copyState[endPosition][0] !== null) {
-      let piece = copyState[endPosition][0];
-      if (piece) {
-        piece.position = endPosition;
-        if (player1 === piece.player) {
-          player1.alive.forEach((p) => {
-              if (p.position === startPosition) {
-                  p.position = endPosition;
-              }
-          });
-        } else {
-          if (player2) {
-            player2.alive.forEach((p) => {
-              if (p.position === startPosition) {
-                  p.position = endPosition;
-              }
-          });
-          }
-        }
-      }
-    }
-  } else {
-      return { isValid: false, newState: copyState, player1: player1, player2: player2 };
-  }
-  return { isValid: true, newState: copyState, player1: player1, player2: player2 };
 }
