@@ -1,22 +1,13 @@
 import { FC, useCallback, useContext, useEffect, useState } from "react"
 import ExpressAPI from "../api/express-api";
-import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { Navigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { JsonObject } from "react-use-websocket/dist/lib/types";
-import { GameContext } from "../context/GameContext";
+import { GameContext, StartGameMessageObject } from "../context/GameContext";
 import { Player, assignBlackPieces, assignWhitePieces, grid } from "../utils/game-utils";
+import { ReadyState } from "react-use-websocket";
 
 interface StartGamePortalProps {
   expressApi: ExpressAPI;
-}
-
-interface StartGameMessageObject extends JsonObject {
-  type: string;
-  accepted?: boolean;
-  initiatingUser: string;
-  recievingUser: string;
-  gameId?: string;
 }
 
 export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
@@ -25,24 +16,8 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
   const [navigateReady, setNavigateReady] = useState<boolean>(false);
   const [users, setUsers] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [socketUrl, setSocketUrl] = useState('ws://localhost:3001');
   const { username } = useContext(AuthContext)
-  const { gameId, setGameId, setInitiatingUser, setReceivingUser } = useContext(GameContext)
-  const { 
-    sendMessage, 
-    lastMessage,
-    readyState 
-  } = useWebSocket<StartGameMessageObject>(socketUrl, { 
-    onOpen: () => console.log('opened'), 
-    shouldReconnect: (closeEvent) => true,
-  });
-  const connectionStatus = {
-    [ReadyState.CONNECTING]: 'Connecting',
-    [ReadyState.OPEN]: 'Open',
-    [ReadyState.CLOSING]: 'Closing',
-    [ReadyState.CLOSED]: 'Closed',
-    [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
-  }[readyState];
+  const { gameId, setGameId, setInitiatingUser, setReceivingUser,sendMessage, lastMessage, readyState } = useContext(GameContext)
 
   useEffect(() => {
     expressApi.getLoggedInUsers()

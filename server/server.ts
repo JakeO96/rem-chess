@@ -136,14 +136,7 @@ wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
           recievingUserWs.send(newMessage);
         }
       }     
-    } /**else if (data.type === 'get-game-players') {
-      if (ws.username) {
-        const [recievingUser, initiatingUser]: string[] = activeGames[data.gameId];
-        data.type = 'game-player-usernames'
-        const newMessage = JSON.stringify({type: data.type, gameId: data.gameId, initiatingUser: initiatingUser, recievingUser: recievingUser});
-        ws.send(newMessage);
-      }
-    }*/
+    } 
   });
 
   ws.on('close', () => {
