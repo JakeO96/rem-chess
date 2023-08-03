@@ -1,19 +1,8 @@
-interface GameState {
-  [key: string]: [Piece | null, number];
-}
-
 export interface Player {
   name: string;
   color: string;
   alive: Piece[];
   grace: Piece[];
-}
-
-export interface MoveResult {
-  isValid: boolean;
-  newState: GameState;
-  newPlayer1: Player | null | undefined;
-  newPlayer2: Player | null | undefined;
 }
 
 export const grid: string[][] = [
@@ -127,22 +116,16 @@ export class Pawn extends Piece {
     let attacks: string[] = [grid[(col - 1)][nextRow], grid[(col + 1)][nextRow]];
     for (let coord of attacks) {
       const spotPiece = state[coord][0];
-      console.log('spotPiece in validPawnMoves vvvvvvv');
-      console.log(spotPiece);
       if (spotPiece === null) {
           continue;
       } else if (spotPiece.isWhite) {
-        console.log('firing in validPawnMoves when the piece in the spot is white')
         if (this.playerColor === 'black') {
           all_moves.push(coord);
         } else {
           continue;
         }
       } else if (!spotPiece.isWhite) {
-        console.log('firing in validPawnMoves when the piece in the spot is black')
-        console.log(`piece being moved playerColor: ${this.playerColor}`)
         if (this.playerColor === 'white') {
-          console.log('move ebing pushed')
           all_moves.push(coord);
         } else {
           continue;

@@ -140,15 +140,11 @@ wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
       if (ws.username) {
         if (activeGames[data.gameId]) {
           const [recievingUser, initiatingUser] = activeGames[data.gameId];
-          if (data.player === recievingUser) {
-            const newMessage = JSON.stringify({type: 'move-made', newGameState: data.newGameState})
-            const initiatingUserWs = activeConnections[initiatingUser];
-            initiatingUserWs.send(newMessage);
-          } else {
-            const newMessage = JSON.stringify({type: 'move-made', newGameState: data.newGameState})
-            const recievingUserWs = activeConnections[recievingUser];
-            recievingUserWs.send(newMessage);
-          }
+          const newMessage = JSON.stringify({type: 'move-made', newGameState: data.newGameState})
+          const initiatingUserWs = activeConnections[initiatingUser];
+          const recievingUserWs = activeConnections[recievingUser];
+          initiatingUserWs.send(newMessage);
+          recievingUserWs.send(newMessage);
         }
       }
     }

@@ -13,8 +13,11 @@ export interface StartGameMessageObject extends JsonObject {
   gameId?: string;
 }
 
-interface GameState {
-  [key: string]: [Piece | null, number];
+export interface GameState {
+  board: {
+    [key: string]: [Piece | null, number];
+  };
+  isWhiteTurn: boolean;
 }
 
 type GameContextType = {
@@ -49,12 +52,12 @@ type GameProviderProps = {
   children: ReactNode;
 };
 
-const produceEmptyBoard = () => {
+const produceInitialGameState = () => {
   let cordCount = 0;
-  const newGameState: GameState = {};
+  const newGameState: GameState = {board: {}, isWhiteTurn: true};
   for (const col of grid) {
     for (const cord of col) {
-      newGameState[cord] = [null, cordCount];
+      newGameState.board[cord] = [null, cordCount];
     }
     cordCount += 1;
   }
@@ -62,10 +65,12 @@ const produceEmptyBoard = () => {
 }
 
 export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
+  const initialState: GameState = produceInitialGameState();
+
   const [initiatingUser, setInitiatingUser] = useState<Player | undefined>(undefined);
   const [receivingUser, setReceivingUser] = useState<Player | undefined>(undefined);
   const [gameId, setGameId] = useState<string>('');
-  const [gameState, setGameState] = useState<GameState>(produceEmptyBoard());
+  const [gameState, setGameState] = useState<GameState>(initialState);
   const { isLoggedIn } = useContext(AuthContext)
   const [socketUrl, setSocketUrl] = useState<string>('');
   

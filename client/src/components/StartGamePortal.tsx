@@ -11,7 +11,6 @@ interface StartGamePortalProps {
 }
 
 export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
-  console.log('StartGamePortal render');
 
   const [navigateReady, setNavigateReady] = useState<boolean>(false);
   const [users, setUsers] = useState<string[]>([]);
