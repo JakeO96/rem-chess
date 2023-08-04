@@ -3,8 +3,8 @@ import ExpressAPI from "../api/express-api";
 import { Navigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { GameContext, StartGameMessageObject } from "../context/GameContext";
-import { Player, assignBlackPieces, assignWhitePieces, grid } from "../utils/game-utils";
 import { ReadyState } from "react-use-websocket";
+import type { Player } from "../utils/game-utils";
 
 interface StartGamePortalProps {
   expressApi: ExpressAPI;
@@ -16,7 +16,7 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
   const [users, setUsers] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { username } = useContext(AuthContext)
-  const { gameId, setGameId, setInitiatingUser, setReceivingUser,sendMessage, lastMessage, readyState } = useContext(GameContext)
+  const { initiatingUser, receivingUser, gameId, setGameId, setInitiatingUser, setReceivingUser,sendMessage, lastMessage, readyState } = useContext(GameContext)
 
   useEffect(() => {
     expressApi.getLoggedInUsers()
@@ -32,23 +32,6 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
   }, [expressApi]);
 
   useEffect(() => {
-    
-    function randomlyAssignWhite(player1: Player, player2: Player): Player[] {
-      const r = Math.floor(Math.random() * 2);
-      if (r === 0) {
-        player1.color = 'white';
-        player2.color = 'black';
-        assignWhitePieces(player1);
-        assignBlackPieces(player2);
-      } else {
-        player1.color = 'black';
-        player2.color = 'white';
-        assignWhitePieces(player2);
-        assignBlackPieces(player1);
-      }
-      return [player1, player2];
-    }
-
     function handleIncomingData(data: StartGameMessageObject) {
       if (data.type === 'game-invite') {
         const accepted = window.confirm(`You have been invited to a game by ${data.inviterUsername}. Do you accept?`);
@@ -60,14 +43,43 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
           sendMessage(responseMessage);
         }))
       } else if (data.type === 'start-game') {
-        let player1 = new Player(data.initiatingUser, '', [], []);
-        let player2 = new Player(data.recievingUser, '', [], []);
-        let [player1WithPieces, player2WithPieces] = randomlyAssignWhite(player1, player2);
         if (data.gameId) {
           setGameId(data.gameId);
         }
-        setInitiatingUser(player1WithPieces);
-        setReceivingUser(player2WithPieces);
+        setInitiatingUser((prevState: Player | undefined) => {
+          if (prevState) {
+            return {
+              ...prevState,
+              name: data.initiatingUser,
+            };
+          } else {
+            // Return a new state when prevState is undefined
+            // You may need to adjust this according to your needs
+            return {
+              name: data.initiatingUser,
+              color: "black", // Example value
+              alive: [], // Example value
+              grave: [], // Example value
+            };
+          }
+        });
+        setReceivingUser((prevState: Player | undefined) => {
+          if (prevState) {
+            return {
+              ...prevState,
+              name: data.receivingUser,
+            };
+          } else {
+            // Return a new state when prevState is undefined
+            // You may need to adjust this according to your needs
+            return {
+              name: data.receivingUser,
+              color: "white", // Example value
+              alive: [], // Example value
+              grave: [], // Example value
+            };
+          }
+        });
         setNavigateReady(true);
       } else if (data.type === 'game-decline') {
         alert(`${data.initiatingUser} declined to start a game.`);

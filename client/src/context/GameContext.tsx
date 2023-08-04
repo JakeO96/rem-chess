@@ -1,6 +1,6 @@
-import { createContext, useState, ReactNode, useEffect, useContext } from 'react';
+import { createContext, useState, ReactNode, useEffect, useContext, useCallback } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
-import { Player } from '../utils/game-utils';
+import { Player, assignBlackPieces, assignWhitePieces } from '../utils/game-utils';
 import { Piece, grid } from '../utils/game-utils';
 import { JsonObject } from 'react-use-websocket/dist/lib/types';
 import { AuthContext } from './AuthContext';
@@ -9,7 +9,7 @@ export interface StartGameMessageObject extends JsonObject {
   type: string;
   accepted?: boolean;
   initiatingUser: string;
-  recievingUser: string;
+  receivingUser: string;
   gameId?: string;
 }
 
@@ -73,12 +73,32 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
   const [gameState, setGameState] = useState<GameState>(initialState);
   const { isLoggedIn } = useContext(AuthContext)
   const [socketUrl, setSocketUrl] = useState<string>('');
+
+  const initiatePlayers = useCallback(() =>  {
+    let player1 = new Player('', '', [], []);
+    let player2 = new Player('', '', [], []);
+    const r = Math.floor(Math.random() * 2);
+    if (r === 0) {
+      player1.color = 'white';
+      player2.color = 'black';
+      assignWhitePieces(player1);
+      assignBlackPieces(player2);
+    } else {
+      player1.color = 'black';
+      player2.color = 'white';
+      assignWhitePieces(player2);
+      assignBlackPieces(player1);
+    }
+    setInitiatingUser(player1)
+    setReceivingUser(player2)
+  }, [setInitiatingUser, setReceivingUser]);
   
   useEffect(() => {
     if (isLoggedIn) {
       setSocketUrl('ws://localhost:3001');
+      initiatePlayers();
     }
-  }, [isLoggedIn]);
+  }, [initiatePlayers, isLoggedIn]);
 
   const {
     sendMessage,

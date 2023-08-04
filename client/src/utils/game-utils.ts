@@ -2,7 +2,7 @@ export interface Player {
   name: string;
   color: string;
   alive: Piece[];
-  grace: Piece[];
+  grave: Piece[];
 }
 
 export const grid: string[][] = [

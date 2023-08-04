@@ -72,7 +72,7 @@ export const ActiveGame: React.FC<{}> = () => {
 };
 
 const ChessBoard: React.FC<{}> = () => {
-  const { gameState } = useContext(GameContext);
+  const { initiatingUser: player1, receivingUser: player2, gameState } = useContext(GameContext);
   const chessBoard = [];
 
   for (let row_num = 0; row_num < 8; row_num++) {
@@ -93,7 +93,9 @@ const ChessBoard: React.FC<{}> = () => {
 
   return (
     <div className="chess-board">
+      {player1 && player2 ? player1.color === 'black' ? <p className="noct-teal">{player1.name} - {player1.color}</p> : <p className="noct-teal">{player2.name} - {player2.color}</p> : null}
       {chessBoard}
+      {player1 && player2 ? player1.color === 'white' ? <p className="noct-teal">{player1.name} - {player1.color}</p> : <p className="noct-teal">{player2.name} - {player2.color}</p>: null}
     </div>
   );
 }
@@ -112,8 +114,10 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
     
       let piece = copyState.board[startPosition][0];
       if (piece) {
-        if (piece.isWhite !== copyState.isWhiteTurn) {
-          return { isValid: false, newState: copyState, newPlayer1: player1, newPlayer2: player2 };
+        if (piece.playerColor === 'white') {
+          if (piece.isWhite !== copyState.isWhiteTurn) {
+            return { isValid: false, newState: copyState, newPlayer1: player1, newPlayer2: player2 };
+          }
         }
       }
       const board = copyState.board;
@@ -176,7 +180,8 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
         return { isValid: false, newState: copyState, newPlayer1: player1, newPlayer2: player2 };
       }
     }
-    copyState.isWhiteTurn = !copyState.isWhiteTurn;
+    const newTurn = copyState.isWhiteTurn ? false : true;
+    copyState.isWhiteTurn = newTurn;
     return { isValid: true, newState: copyState, newPlayer1: player1, newPlayer2: player2 };
   }
 
