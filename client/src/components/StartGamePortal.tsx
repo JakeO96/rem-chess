@@ -4,6 +4,7 @@ import { Navigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { GameContext, StartGameMessageObject } from "../context/GameContext";
 import { ReadyState } from "react-use-websocket";
+import { Player } from "../utils/game-utils";
 
 interface StartGamePortalProps {
   expressApi: ExpressAPI;
@@ -35,7 +36,7 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
       if (data.type === 'game-invite') {
         console.log(data.challenger)
         console.log(data.opponent)
-        const deserializedChallenger = JSON.parse(data.challenger);
+        const deserializedChallenger = Player.fromJSON(data.challenger);
         const accepted = window.confirm(`You have been invited to a game by ${deserializedChallenger.name}. Do you accept?`);
         const responseMessage = JSON.stringify({ type: 'game-invite-response', accepted, challenger: data.challenger, opponent: data.opponent });
         sendMessage(responseMessage);
@@ -45,8 +46,8 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
           sendMessage(responseMessage);
         }))
       } else if (data.type === 'start-game') {
-        const deserializedOpponent = JSON.parse(data.opponent);
-        const deserializedChallenger = JSON.parse(data.challenger);
+        const deserializedOpponent = Player.fromJSON(data.opponent);
+        const deserializedChallenger = Player.fromJSON(data.challenger);
         console.log('challenger in StartGamePortal start-game response vvv')
         console.log(deserializedChallenger)
         console.log('opponent in StartGamePortal start-game response vvv')
@@ -89,8 +90,8 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
     console.log('initializedOpponent in handleUsernameClick vvvvvv')
     console.log(initializedOpponent)
     if (initializedChallenger && initializedOpponent) {
-      const jsonChallenger = JSON.stringify(initializedChallenger);
-      const jsonOpponent = JSON.stringify(initializedOpponent)
+      const jsonChallenger = initializedChallenger.toJSON();
+      const jsonOpponent = initializedOpponent.toJSON();
       const message = JSON.stringify({ type: 'game-invite', challenger: jsonChallenger, opponent: jsonOpponent });
       sendMessage(message);
     }

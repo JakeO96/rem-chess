@@ -10,7 +10,7 @@ import cookieParser from 'cookie-parser';
 import WebSocket from 'ws';
 import http, { IncomingMessage} from 'http';
 import jwt from 'jsonwebtoken';
-import type { Player } from '../client/src/utils/game-utils'
+import { Player } from '../client/src/utils/game-utils'
 import dotenv from 'dotenv-safe';
 dotenv.config();
 
@@ -94,7 +94,7 @@ wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
     const messageStr = typeof message === 'string' ? message : message.toString();
     const data = JSON.parse(messageStr);
     if (data.type === 'game-invite') {
-      const opponent = JSON.parse(data.opponent)
+      const opponent = Player.fromJSON(data.opponent)
       const clientGettingTheMessageSocket = activeConnections[opponent.name];
       if (clientGettingTheMessageSocket) {
         if (clientGettingTheMessageSocket.readyState === WebSocket.OPEN) {
@@ -103,8 +103,8 @@ wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
       }
     } else if (data.type === 'game-invite-response') {
       if (ws.username) {
-        const opponent = JSON.parse(data.opponent);
-        const challenger = JSON.parse(data.challenger);
+        const opponent = Player.fromJSON(data.opponent);
+        const challenger = Player.fromJSON(data.challenger);
         const clientSendingTheMessageSocket = activeConnections[opponent.name];
         if (clientSendingTheMessageSocket) {
           const clientGettingTheMessageSocket = activeConnections[challenger.name];
@@ -129,8 +129,8 @@ wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
       }
     } else if (data.type === 'game-created') {
       if (ws.username) {
-        const opponent = JSON.parse(data.opponent);
-        const challenger = JSON.parse(data.challenger);
+        const opponent = Player.fromJSON(data.opponent);
+        const challenger = Player.fromJSON(data.challenger);
         activeGames[data.gameId] = [challenger, opponent];
         const opponentClientSocket = activeConnections[opponent.name];
         const challengerClientSocket = activeConnections[challenger.name];

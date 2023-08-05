@@ -28,6 +28,25 @@ export class Player {
     this.alive = alive;
     this.grave = grave;
   }
+
+  toJSON() {
+    return {
+      className: this.constructor.name,
+      name: this.name,
+      color: this.color,
+      alive: this.alive.map(piece => piece.toJSON()),
+      grave: this.grave.map(piece => piece.toJSON()),
+    };
+  }
+
+  static fromJSON(json: any) {
+    const player = new Player();
+    player.name = json.name;
+    player.color = json.color;
+    player.alive = json.alive.map((pieceJson: any) => Piece.fromJSON(pieceJson));
+    player.grave = json.grave.map((pieceJson: any) => Piece.fromJSON(pieceJson));
+    return player;
+  }
 }
 
 export abstract class Piece {
@@ -41,6 +60,31 @@ export abstract class Piece {
     public isWhite: boolean,
   ) { }
 
+  toJSON() {
+    return {
+      className: this.constructor.name,
+      tackerTag: this.trackerTag,
+      pieceName: this.pieceName,
+      position: this.position,
+      moved: this.moved,
+      playerName: this.playerName,
+      playerColor: this.playerColor,
+      isWhite: this.isWhite
+    };
+  }
+
+  static fromJSON(json: any) {
+    const piece = new (Piece as any)[json.className]();
+    piece.trackerTag = json.trackerTag;
+    piece.pieceName = json.pieceName;
+    piece.position = json.position;
+    piece.moved = json.moved;
+    piece.playerName = json.playerName;
+    piece.playerColor = json.playerColor;
+    piece.isWhite = json.isWhite;
+    return piece;
+  }
+  
   get_all_diagonal(grid: string[][], state: any, col: number, row: number): string[] {
     let all_moves: string[] = [];
     all_moves = all_moves.concat(this.recurse_diagonal((col + 1), 8, (row + 1), grid, state, [], 'f-slash'));
@@ -109,13 +153,7 @@ export class Pawn extends Piece {
     let all_moves: string[] = [];
     // Check the color of the pawn to decide which direction it should move
     let nextRow = this.isWhite ? row - 1 : row + 1;
-    console.log(`nextRow is: ${nextRow}`)
-    console.log(`col is ${col}`)
-    console.log(`row is ${row}`)
-    console.log('position given from col and row (state[grid[col][nextRow]]) vvvv')
-    console.log(state[grid[col][nextRow]])
-    console.log('the piece on that position (state[grid[col][nextRow]][0]) vvvv')
-    console.log(state[grid[col][nextRow]][0])
+
     if (state[grid[col][nextRow]][0] === null) {
       all_moves.push(grid[col][nextRow]);
     }
