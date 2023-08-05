@@ -109,6 +109,13 @@ export class Pawn extends Piece {
     let all_moves: string[] = [];
     // Check the color of the pawn to decide which direction it should move
     let nextRow = this.isWhite ? row - 1 : row + 1;
+    console.log(`nextRow is: ${nextRow}`)
+    console.log(`col is ${col}`)
+    console.log(`row is ${row}`)
+    console.log('position given from col and row (state[grid[col][nextRow]]) vvvv')
+    console.log(state[grid[col][nextRow]])
+    console.log('the piece on that position (state[grid[col][nextRow]][0]) vvvv')
+    console.log(state[grid[col][nextRow]][0])
     if (state[grid[col][nextRow]][0] === null) {
       all_moves.push(grid[col][nextRow]);
     }

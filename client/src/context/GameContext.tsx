@@ -2,7 +2,7 @@ import { createContext, useState, ReactNode, useEffect, useContext, useCallback 
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { Player, assignBlackPieces, assignWhitePieces } from '../utils/game-utils';
 import { Piece, grid } from '../utils/game-utils';
-import { JsonObject, JsonPrimitive, JsonValue } from 'react-use-websocket/dist/lib/types';
+import { JsonObject } from 'react-use-websocket/dist/lib/types';
 import { AuthContext } from './AuthContext';
 
 export interface StartGameMessageObject extends JsonObject {

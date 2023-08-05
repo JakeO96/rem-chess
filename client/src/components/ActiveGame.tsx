@@ -113,6 +113,8 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
       let startRow = 7 - parseInt(startPosition[1]);
     
       let piece = copyState.board[startPosition][0];
+      // check if piece belongs to white, check the isWhite property of the piece to make sure it is a white piece white is dragging
+      //against if it is white's turn to move. 
       if (piece) {
         if (piece.playerColor === 'white') {
           if (piece.isWhite !== copyState.isWhiteTurn) {
@@ -121,9 +123,13 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
         }
       }
       const board = copyState.board;
+      console.log(board)
       let allMoves: string[] = [];
       // find what piece we are moving
+      console.log(typeof piece)
+      console.log(piece instanceof Pawn)
       if (piece instanceof Pawn) {
+          console.log('is this even firing?')
           allMoves = piece.validPawnMoves(grid, board, startCol, startRow);
       } else if (piece instanceof Knight) {
           allMoves = piece.validKnightMoves(grid, board, startCol, startRow);
@@ -137,7 +143,8 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
       } else if (piece instanceof King) {
           allMoves = piece.validKingMoves(grid, board, startCol, startRow);
       }
-    
+      
+      console.log(allMoves)
       if (allMoves.includes(endPosition)) {
         // if the piece moving is taking an opponents piece
         if (board[endPosition][0] !== null) {
