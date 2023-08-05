@@ -15,7 +15,7 @@ export interface IGame extends Document {
 
 const gameSchema = new mongoose.Schema(
   {
-    heroId: {
+    challengerId: {
       type: mongoose.Schema.Types.ObjectId,
       required: [true],
       ref: "User",

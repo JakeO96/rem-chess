@@ -15,32 +15,35 @@ interface RequestWithUser extends Request {
 const createGame = asyncHandler( async (req: RequestWithUser, res: Response) => {
   console.log("createGame ine express-api firing")
   const startGameData = req.body;
-  if ( !startGameData.recievingUser || !startGameData.initiatingUser ) {
+  if ( !startGameData.challenger || !startGameData.opponent ) {
     res.status(HttpStatusCode.VALIDATION_ERROR);
     throw new Error("Missing required fields");
   }
+  
+  const deserializedOpponent = JSON.parse(startGameData.opponent);
+  const deserializedChallenger = JSON.parse(startGameData.challenger);
 
-  const opponent = await User.findOne({ username: startGameData.recievingUser });
+  const opponent = await User.findOne({ username: deserializedOpponent.name });
   if (!opponent) {
     res.status(HttpStatusCode.VALIDATION_ERROR);
     throw new Error("Some user does not exist");
   }
 
-  const hero = await User.findOne({ username: startGameData.initiatingUser});
-  if (!hero){
+  const challenger = await User.findOne({ username: deserializedChallenger.name});
+  if (!challenger){
     res.status(HttpStatusCode.VALIDATION_ERROR);
     throw new Error("Some user does not exist");
   }
 
   const game = new Game({
-    heroId: hero._id,
+    challengerId: challenger._id,
     opponentId: opponent._id,
     moves: [],
   });
 
   await game.save();
 
-  await User.findByIdAndUpdate(hero._id, { $push: { games: game._id } });
+  await User.findByIdAndUpdate(challenger._id, { $push: { games: game._id } });
   await User.findByIdAndUpdate(opponent._id, { $push: { games: game._id } });
   
   res.status(HttpStatusCode.RECORD_CREATED).json({gameId: game._id});

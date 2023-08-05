@@ -2,14 +2,14 @@ import { createContext, useState, ReactNode, useEffect, useContext, useCallback 
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { Player, assignBlackPieces, assignWhitePieces } from '../utils/game-utils';
 import { Piece, grid } from '../utils/game-utils';
-import { JsonObject } from 'react-use-websocket/dist/lib/types';
+import { JsonObject, JsonPrimitive, JsonValue } from 'react-use-websocket/dist/lib/types';
 import { AuthContext } from './AuthContext';
 
 export interface StartGameMessageObject extends JsonObject {
   type: string;
   accepted?: boolean;
-  initiatingUser: string;
-  receivingUser: string;
+  challenger: string;
+  opponent: string;
   gameId?: string;
 }
 
@@ -21,31 +21,33 @@ export interface GameState {
 }
 
 type GameContextType = {
-  initiatingUser: Player | undefined;
-  receivingUser: Player | undefined;
+  challenger: Player | undefined;
+  opponent: Player | undefined;
   gameId: string;
   gameState: GameState | undefined;
   setGameId: React.Dispatch<React.SetStateAction<string>>;
-  setInitiatingUser: React.Dispatch<React.SetStateAction<Player | undefined>>;
-  setReceivingUser: React.Dispatch<React.SetStateAction<Player | undefined>>;
+  setChallenger: React.Dispatch<React.SetStateAction<Player | undefined>>;
+  setOpponent: React.Dispatch<React.SetStateAction<Player | undefined>>;
   setGameState: React.Dispatch<React.SetStateAction<GameState>>;
   sendMessage: (message: string) => void;
   lastMessage: MessageEvent<any> | null;
   readyState: ReadyState;
+  initiatePlayers: (challengerUsername: string, opponentUsername: string) => Player[];
 };
 
 export const GameContext = createContext<GameContextType>({
-  initiatingUser: undefined,
-  receivingUser: undefined,
+  challenger: undefined,
+  opponent: undefined,
   gameId: '',
   gameState: undefined,
   setGameId: () => { },
-  setInitiatingUser: () => { },
-  setReceivingUser: () => { },
+  setChallenger: () => { },
+  setOpponent: () => { },
   setGameState: () => { },
   sendMessage: () => {},  // default function
   lastMessage: null,
   readyState: ReadyState.UNINSTANTIATED,
+  initiatePlayers: () => [],
 });
 
 type GameProviderProps = {
@@ -67,16 +69,16 @@ const produceInitialGameState = () => {
 export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
   const initialState: GameState = produceInitialGameState();
 
-  const [initiatingUser, setInitiatingUser] = useState<Player | undefined>(undefined);
-  const [receivingUser, setReceivingUser] = useState<Player | undefined>(undefined);
+  const [challenger, setChallenger] = useState<Player | undefined>(undefined);
+  const [opponent, setOpponent] = useState<Player | undefined>(undefined);
   const [gameId, setGameId] = useState<string>('');
   const [gameState, setGameState] = useState<GameState>(initialState);
   const { isLoggedIn } = useContext(AuthContext)
   const [socketUrl, setSocketUrl] = useState<string>('');
 
-  const initiatePlayers = useCallback(() =>  {
-    let player1 = new Player('', '', [], []);
-    let player2 = new Player('', '', [], []);
+  const initiatePlayers = (challengerUsername: string, opponentUsername: string): Player[] =>  {
+    let player1 = new Player(challengerUsername, '', [], []);
+    let player2 = new Player(opponentUsername, '', [], []);
     const r = Math.floor(Math.random() * 2);
     if (r === 0) {
       player1.color = 'white';
@@ -89,16 +91,14 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
       assignWhitePieces(player2);
       assignBlackPieces(player1);
     }
-    setInitiatingUser(player1)
-    setReceivingUser(player2)
-  }, [setInitiatingUser, setReceivingUser]);
+    return [player1, player2];
+  }
   
   useEffect(() => {
     if (isLoggedIn) {
       setSocketUrl('ws://localhost:3001');
-      initiatePlayers();
     }
-  }, [initiatePlayers, isLoggedIn]);
+  }, [isLoggedIn]);
 
   const {
     sendMessage,
@@ -110,7 +110,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
   }, socketUrl !== '');
 
   return (
-    <GameContext.Provider value={{ initiatingUser, receivingUser, gameId, gameState, setGameId, setInitiatingUser, setReceivingUser, setGameState, sendMessage, lastMessage, readyState }}>
+    <GameContext.Provider value={{ challenger, opponent, gameId, gameState, setGameId, setChallenger, setOpponent, setGameState, sendMessage, lastMessage, readyState, initiatePlayers }}>
       {children}
     </GameContext.Provider>
   );

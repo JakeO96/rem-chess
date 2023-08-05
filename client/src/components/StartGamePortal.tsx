@@ -4,7 +4,6 @@ import { Navigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { GameContext, StartGameMessageObject } from "../context/GameContext";
 import { ReadyState } from "react-use-websocket";
-import type { Player } from "../utils/game-utils";
 
 interface StartGamePortalProps {
   expressApi: ExpressAPI;
@@ -15,8 +14,8 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
   const [navigateReady, setNavigateReady] = useState<boolean>(false);
   const [users, setUsers] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { username } = useContext(AuthContext)
-  const { initiatingUser, receivingUser, gameId, setGameId, setInitiatingUser, setReceivingUser,sendMessage, lastMessage, readyState } = useContext(GameContext)
+  const { currentClientUsername } = useContext(AuthContext)
+  const { challenger, opponent, gameId, setGameId, setChallenger, setOpponent, sendMessage, lastMessage, readyState, initiatePlayers } = useContext(GameContext)
 
   useEffect(() => {
     expressApi.getLoggedInUsers()
@@ -34,52 +33,29 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
   useEffect(() => {
     function handleIncomingData(data: StartGameMessageObject) {
       if (data.type === 'game-invite') {
-        const accepted = window.confirm(`You have been invited to a game by ${data.inviterUsername}. Do you accept?`);
-        const responseMessage = JSON.stringify({ type: 'game-invite-response', accepted, recievingUser: data.initiatingUser, initiatingUser: data.recievingUser });
+        console.log(data.challenger)
+        console.log(data.opponent)
+        const deserializedChallenger = JSON.parse(data.challenger);
+        const accepted = window.confirm(`You have been invited to a game by ${deserializedChallenger.name}. Do you accept?`);
+        const responseMessage = JSON.stringify({ type: 'game-invite-response', accepted, challenger: data.challenger, opponent: data.opponent });
         sendMessage(responseMessage);
       } else if (data.type === 'create-game') {
         expressApi.createGame(data, ((gameId) => {
-          const responseMessage = JSON.stringify({ type: 'game-created', recievingUser: data.initiatingUser, initiatingUser: data.recievingUser, gameId: gameId})
+          const responseMessage = JSON.stringify({ type: 'game-created', challenger: data.challenger, opponent: data.opponent, gameId: gameId})
           sendMessage(responseMessage);
         }))
       } else if (data.type === 'start-game') {
+        const deserializedOpponent = JSON.parse(data.opponent);
+        const deserializedChallenger = JSON.parse(data.challenger);
+        console.log('challenger in StartGamePortal start-game response vvv')
+        console.log(deserializedChallenger)
+        console.log('opponent in StartGamePortal start-game response vvv')
+        console.log(deserializedOpponent)
+        setChallenger(deserializedChallenger);
+        setOpponent(deserializedOpponent);
         if (data.gameId) {
           setGameId(data.gameId);
         }
-        setInitiatingUser((prevState: Player | undefined) => {
-          if (prevState) {
-            return {
-              ...prevState,
-              name: data.initiatingUser,
-            };
-          } else {
-            // Return a new state when prevState is undefined
-            // You may need to adjust this according to your needs
-            return {
-              name: data.initiatingUser,
-              color: "black", // Example value
-              alive: [], // Example value
-              grave: [], // Example value
-            };
-          }
-        });
-        setReceivingUser((prevState: Player | undefined) => {
-          if (prevState) {
-            return {
-              ...prevState,
-              name: data.receivingUser,
-            };
-          } else {
-            // Return a new state when prevState is undefined
-            // You may need to adjust this according to your needs
-            return {
-              name: data.receivingUser,
-              color: "white", // Example value
-              alive: [], // Example value
-              grave: [], // Example value
-            };
-          }
-        });
         setNavigateReady(true);
       } else if (data.type === 'game-decline') {
         alert(`${data.initiatingUser} declined to start a game.`);
@@ -101,13 +77,24 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
         handleIncomingData(data);
       }
     }
-  }, [lastMessage, expressApi, sendMessage, setGameId, setInitiatingUser, setReceivingUser]);
+  }, [lastMessage, expressApi, sendMessage, setGameId, setChallenger, setOpponent, currentClientUsername, challenger, opponent]);
 
-  const handleUsernameClick = useCallback((evt: React.MouseEvent<HTMLButtonElement>) => {
-    const player2 = evt.currentTarget.dataset.username;
-    const message = JSON.stringify({ type: 'game-invite', recievingUser: player2, initiatingUser: username });
-    sendMessage(message);
-  }, [sendMessage, username]);
+  const handleUsernameClick = (evt: React.MouseEvent<HTMLButtonElement>) => {
+    const opponentUsername = evt.currentTarget.dataset.username;
+    console.log(`oppponentUsernae: ${opponentUsername}`)
+    console.log(`username: ${currentClientUsername}`)
+    const [initializedChallenger, initializedOpponent] = opponentUsername ? initiatePlayers(currentClientUsername, opponentUsername) : [null, null]
+    console.log('initializeChallenger in handleUsernameClick vvvvvv')
+    console.log(initializedChallenger)
+    console.log('initializedOpponent in handleUsernameClick vvvvvv')
+    console.log(initializedOpponent)
+    if (initializedChallenger && initializedOpponent) {
+      const jsonChallenger = JSON.stringify(initializedChallenger);
+      const jsonOpponent = JSON.stringify(initializedOpponent)
+      const message = JSON.stringify({ type: 'game-invite', challenger: jsonChallenger, opponent: jsonOpponent });
+      sendMessage(message);
+    }
+  }
 
   return (
     <>

@@ -3,7 +3,7 @@ import ExpressAPI from '../api/express-api';
 
 type AuthContextType = {
   isLoggedIn: boolean;
-  username: string;
+  currentClientUsername: string;
   logIn: (fields: { email: string; password: string }) => Promise<boolean | undefined>;
   logOut: () => Promise<boolean | undefined>;
   register: (fields: { email: string; username: string; password: string }) => Promise<boolean | undefined>;
@@ -11,7 +11,7 @@ type AuthContextType = {
 
 export const AuthContext = createContext<AuthContextType>({
   isLoggedIn: false,
-  username: '',
+  currentClientUsername: '',
   logIn: async () => true || false,
   logOut: async () => true || false,
   register: async () => true || false,
@@ -25,7 +25,7 @@ type AuthProviderProps = {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children, expressApi }) => {
   const isUserLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(isUserLoggedIn);
-  const [username, setUsername] = useState<string>('')
+  const [currentClientUsername, setCurrentClientUsername] = useState<string>('')
 
   const logIn = async (fields: { email: string; password: string }) => {
     try {
@@ -35,7 +35,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, expressApi
       if (data.success) {
         localStorage.setItem('isLoggedIn', 'true');
         localStorage.setItem('username', data.username);
-        setUsername(data.username);
+        setCurrentClientUsername(data.username);
         setIsLoggedIn(true);
         return true;
       }
@@ -53,7 +53,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, expressApi
       if (data.success) {
         localStorage.removeItem('isLoggedIn');
         localStorage.removeItem('username');
-        setUsername('');
+        setCurrentClientUsername('');
         setIsLoggedIn(false);
         return true;
       }
@@ -80,7 +80,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, expressApi
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, username, logIn, logOut, register }}>
+    <AuthContext.Provider value={{ isLoggedIn, currentClientUsername, logIn, logOut, register }}>
       {children}
     </AuthContext.Provider>
   );

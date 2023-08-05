@@ -8,17 +8,17 @@ import { svgIcons } from '../utils/svg-icons';
 interface MoveResult {
   isValid: boolean;
   newState: GameState;
-  newPlayer1: Player | null | undefined;
-  newPlayer2: Player | null | undefined;
+  newChallenger: Player | null | undefined;
+  newOpponent: Player | null | undefined;
 }
 
 export const ActiveGame: React.FC<{}> = () => {
 
-  const { initiatingUser: player1, receivingUser: player2, gameState, setGameState, sendMessage, lastMessage } = useContext(GameContext);
+  const { challenger, opponent, gameState, setGameState, sendMessage, lastMessage } = useContext(GameContext);
 
   const setPiecesOnBoard = useCallback(() => {
-    if (player1 && player2 && gameState) {
-      const allPieces = player1.alive.concat(player2.alive);
+    if (challenger && opponent && gameState) {
+      const allPieces = challenger.alive.concat(opponent.alive);
       const allPositions = allPieces.map(p => p.position);
       const newGameState: GameState = {...gameState};
       for (const spot in newGameState.board) {
@@ -33,7 +33,7 @@ export const ActiveGame: React.FC<{}> = () => {
       setGameState(newGameState);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [player1, player2]);
+  }, [challenger, opponent]);
 
   useEffect(() => {
     setPiecesOnBoard();
@@ -72,7 +72,7 @@ export const ActiveGame: React.FC<{}> = () => {
 };
 
 const ChessBoard: React.FC<{}> = () => {
-  const { initiatingUser: player1, receivingUser: player2, gameState } = useContext(GameContext);
+  const { challenger, opponent, gameState } = useContext(GameContext);
   const chessBoard = [];
 
   for (let row_num = 0; row_num < 8; row_num++) {
@@ -93,16 +93,16 @@ const ChessBoard: React.FC<{}> = () => {
 
   return (
     <div className="chess-board">
-      {player1 && player2 ? player1.color === 'black' ? <p className="noct-teal">{player1.name} - {player1.color}</p> : <p className="noct-teal">{player2.name} - {player2.color}</p> : null}
+      {challenger && opponent ? challenger.color === 'black' ? <p className="noct-teal">{challenger.name} - {challenger.color}</p> : <p className="noct-teal">{opponent.name} - {opponent.color}</p> : null}
       {chessBoard}
-      {player1 && player2 ? player1.color === 'white' ? <p className="noct-teal">{player1.name} - {player1.color}</p> : <p className="noct-teal">{player2.name} - {player2.color}</p>: null}
+      {challenger && opponent ? challenger.color === 'white' ? <p className="noct-teal">{challenger.name} - {challenger.color}</p> : <p className="noct-teal">{opponent.name} - {opponent.color}</p>: null}
     </div>
   );
 }
 
 // Square component
 const Square: React.FC<{ position: string, squareColor: string }> = ({ position, squareColor }) => {
-  const { initiatingUser: player1, receivingUser: player2, gameId, gameState, setInitiatingUser, setReceivingUser, setGameState, sendMessage } = useContext(GameContext);
+  const { challenger, opponent, gameId, gameState, setChallenger, setOpponent, setGameState, sendMessage } = useContext(GameContext);
 
   const process_move = (start: string, end: string): MoveResult => {
     let copyState = {...gameState as GameState};
@@ -116,7 +116,7 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
       if (piece) {
         if (piece.playerColor === 'white') {
           if (piece.isWhite !== copyState.isWhiteTurn) {
-            return { isValid: false, newState: copyState, newPlayer1: player1, newPlayer2: player2 };
+            return { isValid: false, newState: copyState, newChallenger: challenger, newOpponent: opponent };
           }
         }
       }
@@ -143,13 +143,13 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
         if (board[endPosition][0] !== null) {
           const endSpotpiece = board[endPosition][0];
           // update the alive and grave list for player losing a piece
-          if (endSpotpiece && player1 && player2) {
-            if (player1.alive.includes(endSpotpiece)) {
-              player1.grave.push(endSpotpiece);
-              player1.alive = player1.alive.filter(item => item !== endSpotpiece);
+          if (endSpotpiece && challenger && opponent) {
+            if (challenger.alive.includes(endSpotpiece)) {
+              challenger.grave.push(endSpotpiece);
+              challenger.alive = challenger.alive.filter(item => item !== endSpotpiece);
             } else {
-              player2.grave.push(endSpotpiece);
-              player2.alive = player2.alive.filter(item => item !== endSpotpiece);
+              opponent.grave.push(endSpotpiece);
+              opponent.alive = opponent.alive.filter(item => item !== endSpotpiece);
             }
           }
         }
@@ -159,16 +159,16 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
         board[startPosition][0] = null;
         if (board[endPosition][0] !== null) {
           let piece = board[endPosition][0];
-          if (piece && player1 && player2) {
+          if (piece && challenger && opponent) {
             piece.position = endPosition;
-            if (player1.name === piece.playerName) {
-              player1.alive.forEach((p) => {
+            if (challenger.name === piece.playerName) {
+              challenger.alive.forEach((p) => {
                   if (p.position === startPosition) {
                       p.position = endPosition;
                   }
               });
             } else {
-              player2.alive.forEach((p) => {
+              opponent.alive.forEach((p) => {
                 if (p.position === startPosition) {
                     p.position = endPosition;
                 }
@@ -177,12 +177,12 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
           }
         }
       } else {
-        return { isValid: false, newState: copyState, newPlayer1: player1, newPlayer2: player2 };
+        return { isValid: false, newState: copyState, newChallenger: challenger, newOpponent: opponent };
       }
     }
     const newTurn = copyState.isWhiteTurn ? false : true;
     copyState.isWhiteTurn = newTurn;
-    return { isValid: true, newState: copyState, newPlayer1: player1, newPlayer2: player2 };
+    return { isValid: true, newState: copyState, newChallenger: challenger, newOpponent: opponent };
   }
 
   const [, dropRef] = useDrop({
@@ -191,15 +191,15 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
       if (item) {
         const start = item.piece.position; 
         const end = position;
-        if (player1 && player2) {
+        if (challenger && opponent) {
           const moveResult = process_move(start, end);
           if (moveResult.isValid) {
             item.piece.moved = true;
             const message = JSON.stringify({type: 'valid-move', pieceColor: item.piece.isWhite, playerName: item.piece.playerName, gameId: gameId, newGameState: moveResult.newState })
             sendMessage(message)
-            if (moveResult.newPlayer1 && moveResult.newPlayer2) {
-              setInitiatingUser(moveResult.newPlayer1);
-              setReceivingUser(moveResult.newPlayer2);
+            if (moveResult.newChallenger && moveResult.newOpponent) {
+              setChallenger(moveResult.newChallenger);
+              setOpponent(moveResult.newOpponent);
             }
             setGameState(moveResult.newState);
           }

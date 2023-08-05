@@ -10,8 +10,8 @@ import cookieParser from 'cookie-parser';
 import WebSocket from 'ws';
 import http, { IncomingMessage} from 'http';
 import jwt from 'jsonwebtoken';
+import type { Player } from '../client/src/utils/game-utils'
 import dotenv from 'dotenv-safe';
-import { info } from 'console';
 dotenv.config();
 
 interface ExtendedIncomingMessage extends IncomingMessage {
@@ -29,7 +29,7 @@ interface ActiveConnections {
 }
 
 interface ActiveGames {
-  [key: string]: string[];
+  [key: string]: Player[];
 }
 
 connectDb();
@@ -94,29 +94,32 @@ wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
     const messageStr = typeof message === 'string' ? message : message.toString();
     const data = JSON.parse(messageStr);
     if (data.type === 'game-invite') {
-      const recievingUserWs = activeConnections[data.recievingUser];
-      if (recievingUserWs) {
-        if (recievingUserWs.readyState === WebSocket.OPEN) {
-          recievingUserWs.send(message);
+      const opponent = JSON.parse(data.opponent)
+      const clientGettingTheMessageSocket = activeConnections[opponent.name];
+      if (clientGettingTheMessageSocket) {
+        if (clientGettingTheMessageSocket.readyState === WebSocket.OPEN) {
+          clientGettingTheMessageSocket.send(message);
         }
       }
     } else if (data.type === 'game-invite-response') {
       if (ws.username) {
-        const initiatingUserWs = activeConnections[data.recievingUser];
-        if (initiatingUserWs) {
-          const recievingUserWs = activeConnections[data.initiatingUser];
-          if (recievingUserWs) {
+        const opponent = JSON.parse(data.opponent);
+        const challenger = JSON.parse(data.challenger);
+        const clientSendingTheMessageSocket = activeConnections[opponent.name];
+        if (clientSendingTheMessageSocket) {
+          const clientGettingTheMessageSocket = activeConnections[challenger.name];
+          if (clientGettingTheMessageSocket) {
             if (data.accepted) {
-              if (initiatingUserWs.readyState === WebSocket.OPEN || recievingUserWs.readyState === WebSocket.OPEN) {
+              if (clientSendingTheMessageSocket.readyState === WebSocket.OPEN || clientGettingTheMessageSocket.readyState === WebSocket.OPEN) {
                 data.type = 'create-game';
                 const newMessage = JSON.stringify(data);
-                recievingUserWs.send(newMessage);
+                clientGettingTheMessageSocket.send(newMessage);
               }
             } else {
-              if (recievingUserWs.readyState === WebSocket.OPEN) {
+              if (clientGettingTheMessageSocket.readyState === WebSocket.OPEN) {
                 data.type = 'game-decline';
                 const newMessage = JSON.stringify(data);
-                recievingUserWs.send(newMessage);
+                clientGettingTheMessageSocket.send(newMessage);
               }
             }
           }
@@ -126,25 +129,27 @@ wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
       }
     } else if (data.type === 'game-created') {
       if (ws.username) {
-        activeGames[data.gameId] = [data.recievingUser, data.initiatingUser];
-        const initiatingUserWs = activeConnections[data.recievingUser];
-        const recievingUserWs = activeConnections[data.initiatingUser];
-        if (initiatingUserWs && recievingUserWs) {
+        const opponent = JSON.parse(data.opponent);
+        const challenger = JSON.parse(data.challenger);
+        activeGames[data.gameId] = [challenger, opponent];
+        const opponentClientSocket = activeConnections[opponent.name];
+        const challengerClientSocket = activeConnections[challenger.name];
+        if (opponentClientSocket && challengerClientSocket) {
           data.type = 'start-game'
           const newMessage = JSON.stringify(data);
-          initiatingUserWs.send(newMessage);
-          recievingUserWs.send(newMessage);
+          opponentClientSocket.send(newMessage);
+          challengerClientSocket.send(newMessage);
         }
       }     
     } else if (data.type === 'valid-move') {
       if (ws.username) {
         if (activeGames[data.gameId]) {
-          const [recievingUser, initiatingUser] = activeGames[data.gameId];
+          const [challenger, opponent] = activeGames[data.gameId];
           const newMessage = JSON.stringify({type: 'move-made', newGameState: data.newGameState})
-          const initiatingUserWs = activeConnections[initiatingUser];
-          const recievingUserWs = activeConnections[recievingUser];
-          initiatingUserWs.send(newMessage);
-          recievingUserWs.send(newMessage);
+          const challengerClientSocket = activeConnections[challenger.name];
+          const opponenetClientSocket = activeConnections[opponent.name];
+          challengerClientSocket.send(newMessage);
+          opponenetClientSocket.send(newMessage);
         }
       }
     }
