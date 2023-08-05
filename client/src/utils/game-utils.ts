@@ -49,7 +49,8 @@ export class Player {
   }
 }
 
-export abstract class Piece {
+export class Piece {
+  static classMap: { Pawn: typeof Pawn; Rook: typeof Rook; Knight: typeof Knight; Bishop: typeof Bishop; Queen: typeof Queen; King: typeof King; };
   constructor(
     public trackerTag: string,
     public pieceName: string,
@@ -74,15 +75,21 @@ export abstract class Piece {
   }
 
   static fromJSON(json: any) {
-    const piece = new (Piece as any)[json.className]();
-    piece.trackerTag = json.trackerTag;
-    piece.pieceName = json.pieceName;
-    piece.position = json.position;
-    piece.moved = json.moved;
-    piece.playerName = json.playerName;
-    piece.playerColor = json.playerColor;
-    piece.isWhite = json.isWhite;
-    return piece;
+    if (!(json.className in Piece.classMap)) {
+      throw new Error(`Invalid class name: ${json.className}`);
+    } else {
+      const pieceClass = Piece.classMap[json.className as keyof typeof Piece.classMap];
+      const piece = new pieceClass(
+        json.trackerTag,
+        json.pieceName,
+        json.position,
+        json.moved,
+        json.playerName,
+        json.playerColor,
+        json.isWhite
+      );
+      return piece;
+    }
   }
   
   get_all_diagonal(grid: string[][], state: any, col: number, row: number): string[] {
@@ -256,6 +263,7 @@ export class King extends Piece {
     return allMoves;
   }
 }
+
 
 export const assignWhitePieces = (player: Player): void => {
   const playerName = player.name;
