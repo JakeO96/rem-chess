@@ -264,6 +264,15 @@ export class King extends Piece {
   }
 }
 
+Piece.classMap = {
+  Pawn,
+  Rook,
+  Knight,
+  Bishop,
+  Queen,
+  King,
+}
+
 
 export const assignWhitePieces = (player: Player): void => {
   const playerName = player.name;

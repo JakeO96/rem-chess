@@ -4,6 +4,7 @@ import asyncHandler from 'express-async-handler'
 import Game from '../models/gameModel'
 import User from '../models/userModel'
 import type { ActiveUser } from '../models/userModel'
+import { Player } from '../../client/src/utils/game-utils'
 
 interface RequestWithUser extends Request {
   user?: ActiveUser;
@@ -20,8 +21,8 @@ const createGame = asyncHandler( async (req: RequestWithUser, res: Response) => 
     throw new Error("Missing required fields");
   }
   
-  const deserializedOpponent = JSON.parse(startGameData.opponent);
-  const deserializedChallenger = JSON.parse(startGameData.challenger);
+  const deserializedOpponent = Player.fromJSON(startGameData.opponent);
+  const deserializedChallenger = Player.fromJSON(startGameData.challenger);
 
   const opponent = await User.findOne({ username: deserializedOpponent.name });
   if (!opponent) {
