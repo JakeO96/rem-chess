@@ -50,9 +50,7 @@ export class Player {
 }
 
 export class Piece {
-  static classMap: { Pawn: typeof Pawn; Rook: typeof Rook; Knight: typeof Knight; Bishop: typeof Bishop; Queen: typeof Queen; King: typeof King; };
   constructor(
-    public trackerTag: string,
     public pieceName: string,
     public position: string,
     public moved: boolean,
@@ -64,7 +62,6 @@ export class Piece {
   toJSON() {
     return {
       className: this.constructor.name,
-      tackerTag: this.trackerTag,
       pieceName: this.pieceName,
       position: this.position,
       moved: this.moved,
@@ -75,22 +72,18 @@ export class Piece {
   }
 
   static fromJSON(json: any) {
-    if (!(json.className in Piece.classMap)) {
-      throw new Error(`Invalid class name: ${json.className}`);
-    } else {
-      const pieceClass = Piece.classMap[json.className as keyof typeof Piece.classMap];
-      const piece = new pieceClass(
-        json.trackerTag,
+    const pieceFactory = new PieceFactory();
+    const piece = pieceFactory.createPiece(
+        json.className,
         json.pieceName,
         json.position,
         json.moved,
         json.playerName,
         json.playerColor,
         json.isWhite
-      );
-      return piece;
-    }
-  }
+    );
+    return piece;
+}
   
   get_all_diagonal(grid: string[][], state: any, col: number, row: number): string[] {
     let all_moves: string[] = [];
@@ -264,48 +257,62 @@ export class King extends Piece {
   }
 }
 
-Piece.classMap = {
-  Pawn,
-  Rook,
-  Knight,
-  Bishop,
-  Queen,
-  King,
+export class PieceFactory {
+  createPiece(pieceType: string, pieceName: string, position: string, moved: boolean, playerName: string, playerColor: string, isWhite: boolean) {
+      switch (pieceType) {
+          case 'Pawn':
+              return new Pawn(pieceName, position, moved, playerName, playerColor, isWhite);
+          case 'Rook':
+              return new Rook(pieceName, position, moved, playerName, playerColor, isWhite);
+          case 'Knight':
+              return new Knight(pieceName, position, moved, playerName, playerColor, isWhite);
+          case 'Bishop':
+              return new Bishop(pieceName, position, moved, playerName, playerColor, isWhite);
+          case 'Queen':
+              return new Queen(pieceName, position, moved, playerName, playerColor, isWhite);
+          case 'King':
+              return new King(pieceName, position, moved, playerName, playerColor, isWhite);
+          default:
+              throw new Error(`Invalid piece type: ${pieceType}`);
+      }
+  }
 }
 
 
 export const assignWhitePieces = (player: Player): void => {
   const playerName = player.name;
   const playerColor = player.color;
+  const pieceFactory = new PieceFactory();
   for (let col of grid) {
-    player.alive.push(new Pawn('wP', 'whitePawn', col[6], false, playerName, playerColor, true));
+    player.alive.push(pieceFactory.createPiece('Pawn', 'whitePawn', col[6], false, playerName, playerColor, true));
   }
   player.alive.push(
-    new Rook('wR', 'whiteRook', grid[0][7], false, playerName, playerColor, true),
-    new Knight('wN', 'whiteKnight', grid[1][7], false, playerName, playerColor, true),
-    new Bishop('wB', 'whiteBishop', grid[2][7], false, playerName, playerColor, true),
-    new Queen('wQ', 'whiteQueen', grid[3][7], false, playerName, playerColor, true),
-    new King('wK', 'whiteKing', grid[4][7], false, playerName, playerColor, true),
-    new Bishop('wB', 'whiteBishop', grid[5][7], false, playerName, playerColor, true),
-    new Knight('wN', 'whiteKnight', grid[6][7], false, playerName, playerColor, true),
-    new Rook('wR', 'whiteRook', grid[7][7], false, playerName, playerColor, true)
+    pieceFactory.createPiece('Rook', 'whiteRook', grid[0][7], false, playerName, playerColor, true),
+    pieceFactory.createPiece('Knight', 'whiteKnight', grid[1][7], false, playerName, playerColor, true),
+    pieceFactory.createPiece('Bishop', 'whiteBishop', grid[2][7], false, playerName, playerColor, true),
+    pieceFactory.createPiece('Queen', 'whiteQueen', grid[3][7], false, playerName, playerColor, true),
+    pieceFactory.createPiece('King', 'whiteKing', grid[4][7], false, playerName, playerColor, true),
+    pieceFactory.createPiece('Bishop', 'whiteBishop', grid[5][7], false, playerName, playerColor, true),
+    pieceFactory.createPiece('Knight', 'whiteKnight', grid[6][7], false, playerName, playerColor, true),
+    pieceFactory.createPiece('Rook', 'whiteRook', grid[7][7], false, playerName, playerColor, true)
   )
 }
 
 export const assignBlackPieces = (player: Player): void => {
   const playerName = player.name;
   const playerColor = player.color;
+  const pieceFactory = new PieceFactory();
   for (let col of grid) {
-      player.alive.push(new Pawn('bP', 'blackPawn', col[1], false, playerName, playerColor, false));
+      player.alive.push(pieceFactory.createPiece('Pawn', 'blackPawn', col[1], false, playerName, playerColor, false));
   }
   player.alive.push(
-      new Rook('bR', 'blackRook', grid[0][0], false, playerName, playerColor, false),
-      new Knight('bN', 'blackKnight', grid[1][0], false, playerName, playerColor, false),
-      new Bishop('bB', 'blackBishop', grid[2][0], false, playerName, playerColor, false),
-      new Queen('bQ', 'blackQueen', grid[3][0], false, playerName, playerColor, false),
-      new King('bK', 'blackKing', grid[4][0], false, playerName, playerColor, false),
-      new Bishop('bB', 'blackBishop', grid[5][0], false, playerName, playerColor, false),
-      new Knight('bN', 'blackKnight', grid[6][0], false, playerName, playerColor, false),
-      new Rook('bR', 'blackRook', grid[7][0], false, playerName, playerColor, false)
+    pieceFactory.createPiece('Rook','blackRook', grid[0][0], false, playerName, playerColor, false),
+    pieceFactory.createPiece('Knight', 'blackKnight', grid[1][0], false, playerName, playerColor, false),
+    pieceFactory.createPiece('Bishop', 'blackBishop', grid[2][0], false, playerName, playerColor, false),
+    pieceFactory.createPiece('Queen', 'blackQueen', grid[3][0], false, playerName, playerColor, false),
+    pieceFactory.createPiece('King', 'blackKing', grid[4][0], false, playerName, playerColor, false),
+    pieceFactory.createPiece('Bishop', 'blackBishop', grid[5][0], false, playerName, playerColor, false),
+    pieceFactory.createPiece('Knight', 'blackKnight', grid[6][0], false, playerName, playerColor, false),
+    pieceFactory.createPiece('Rook', 'blackRook', grid[7][0], false, playerName, playerColor, false)
   );
 }
