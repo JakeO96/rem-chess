@@ -4,6 +4,7 @@ import type { GameState } from '../context/GameContext'
 import { GameContext } from "../context/GameContext";
 import { useDrag, useDrop } from 'react-dnd';
 import { svgIcons } from '../utils/svg-icons';
+import { AuthContext } from '../context/AuthContext';
 
 interface MoveResult {
   isValid: boolean;
@@ -51,7 +52,6 @@ export const ActiveGame: React.FC<{}> = () => {
           // If the square contains a piece, convert it back to a Piece object
           if (square[0] !== null) {
             newGameState.board[position][0] = Piece.fromJSON(square[0]);
-            console.log(newGameState.board[position][0]);  // Check the output of Piece.fromJSON()
           }
         }
     
@@ -115,6 +115,7 @@ const ChessBoard: React.FC<{}> = () => {
 // Square component
 const Square: React.FC<{ position: string, squareColor: string }> = ({ position, squareColor }) => {
   const { challenger, opponent, gameId, gameState, setChallenger, setOpponent, setGameState, sendMessage } = useContext(GameContext);
+  const { currentClientUsername } = useContext(AuthContext)
 
   const process_move = (start: string, end: string): MoveResult => {
     let copyState = {...gameState as GameState};
@@ -128,20 +129,23 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
       // check if piece belongs to white, check the isWhite property of the piece to make sure it is a white piece white is dragging
       //against if it is white's turn to move. 
       if (piece) {
-        if (piece.playerColor === 'white') {
-          if (piece.isWhite !== copyState.isWhiteTurn) {
-            return { isValid: false, newState: copyState, newChallenger: challenger, newOpponent: opponent };
-          }
+        console.log('playercolor is white')
+        console.log(piece.isWhite)
+        console.log(copyState.isWhiteTurn)
+        console.log(piece.playerName)
+        if (piece.isWhite !== copyState.isWhiteTurn) {
+          return { isValid: false, newState: copyState, newChallenger: challenger, newOpponent: opponent };
+        }
+        console.log(currentClientUsername)
+        if (piece.playerName !== currentClientUsername){
+          return { isValid: false, newState: copyState, newChallenger: challenger, newOpponent: opponent };
         }
       }
+
       const board = copyState.board;
-      console.log(board)
       let allMoves: string[] = [];
-      // find what piece we are moving
-      console.log(typeof piece)
-      console.log(piece instanceof Pawn)
+      // find what kind of piece we are moving
       if (piece instanceof Pawn) {
-          console.log('is this even firing?')
           allMoves = piece.validPawnMoves(grid, board, startCol, startRow);
       } else if (piece instanceof Knight) {
           allMoves = piece.validKnightMoves(grid, board, startCol, startRow);
@@ -156,7 +160,6 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
           allMoves = piece.validKingMoves(grid, board, startCol, startRow);
       }
       
-      console.log(allMoves)
       if (allMoves.includes(endPosition)) {
         // if the piece moving is taking an opponents piece
         if (board[endPosition][0] !== null) {
