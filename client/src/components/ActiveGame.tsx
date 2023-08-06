@@ -43,7 +43,19 @@ export const ActiveGame: React.FC<{}> = () => {
 
     function handleIncomingData(data: any) {
       if (data.type === 'move-made') {
-        setGameState(data.newGameState);
+        const newGameState = data.newGameState;
+    
+        // Loop over the board
+        for (const position in newGameState.board) {
+          const square = newGameState.board[position];
+          // If the square contains a piece, convert it back to a Piece object
+          if (square[0] !== null) {
+            newGameState.board[position][0] = Piece.fromJSON(square[0]);
+            console.log(newGameState.board[position][0]);  // Check the output of Piece.fromJSON()
+          }
+        }
+    
+        setGameState(newGameState);
       }
     }
 
@@ -208,7 +220,6 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
               setChallenger(moveResult.newChallenger);
               setOpponent(moveResult.newOpponent);
             }
-            setGameState(moveResult.newState);
           }
           else {
             alert('inValid Move');
