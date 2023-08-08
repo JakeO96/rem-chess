@@ -157,23 +157,25 @@ export class Pawn extends Piece {
     if (state[grid[col][nextRow]][0] === null) {
       all_moves.push(grid[col][nextRow]);
     }
-  
-    let attacks: string[] = [grid[(col - 1)][nextRow], grid[(col + 1)][nextRow]];
-    for (let coord of attacks) {
-      const spotPiece = state[coord][0];
-      if (spotPiece === null) {
-          continue;
-      } else if (spotPiece.isWhite) {
-        if (this.playerColor === 'black') {
-          all_moves.push(coord);
-        } else {
-          continue;
-        }
-      } else if (!spotPiece.isWhite) {
-        if (this.playerColor === 'white') {
-          all_moves.push(coord);
-        } else {
-          continue;
+    
+    if ((col-1) >= 0 && (col+1) <= 7) {
+      let attacks: string[] = [grid[(col - 1)][nextRow], grid[(col + 1)][nextRow]];
+      for (let coord of attacks) {
+        const spotPiece = state[coord][0];
+        if (spotPiece === null) {
+            continue;
+        } else if (spotPiece.isWhite) {
+          if (this.playerColor === 'black') {
+            all_moves.push(coord);
+          } else {
+            continue;
+          }
+        } else if (!spotPiece.isWhite) {
+          if (this.playerColor === 'white') {
+            all_moves.push(coord);
+          } else {
+            continue;
+          }
         }
       }
     }
