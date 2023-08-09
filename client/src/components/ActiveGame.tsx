@@ -15,7 +15,7 @@ interface MoveResult {
 
 export const ActiveGame: React.FC<{}> = () => {
 
-  const { challenger, opponent, gameState, setGameState, sendMessage, lastMessage } = useContext(GameContext);
+  const { challenger, opponent, gameState, setChallenger, setOpponent, setGameState, sendMessage, lastMessage } = useContext(GameContext);
 
   const setPiecesOnBoard = useCallback(() => {
     if (challenger && opponent && gameState) {
@@ -44,18 +44,22 @@ export const ActiveGame: React.FC<{}> = () => {
 
     function handleIncomingData(data: any) {
       if (data.type === 'move-made') {
-        const newGameState = data.newGameState;
+        const deserializedNewGameState = data.newGameState;
     
         // Loop over the board
-        for (const position in newGameState.board) {
-          const square = newGameState.board[position];
+        for (const position in deserializedNewGameState.board) {
+          const square = deserializedNewGameState.board[position];
           // If the square contains a piece, convert it back to a Piece object
           if (square[0] !== null) {
-            newGameState.board[position][0] = Piece.fromJSON(square[0]);
+            deserializedNewGameState.board[position][0] = Piece.fromJSON(square[0]);
           }
         }
-    
-        setGameState(newGameState);
+        const deserializedNewChallenger = Player.fromJSON(data.newChallenger);
+        const deserializedNewOpponent = Player.fromJSON(data.newOpponent);
+
+        setChallenger(deserializedNewChallenger);
+        setOpponent(deserializedNewOpponent);
+        setGameState(deserializedNewGameState);
       }
     }
 
@@ -74,17 +78,54 @@ export const ActiveGame: React.FC<{}> = () => {
         handleIncomingData(data);
       }
     }
-  }, [sendMessage, lastMessage, setGameState])
+  }, [sendMessage, lastMessage, setGameState, setChallenger, setOpponent])
+
+  const renderGravePiece = (piece: Piece, index: number) => (
+    <div key={index} className="border-2 border-noct-teal">{svgIcons[piece.pieceName]}</div>
+  );
 
   return (
     <>
+    <div className='flex justify-center mb-4'>
+      {challenger && opponent ? challenger.color === 'black' ? <p className="text-noct-blue">{challenger.name}</p> : <p className="text-noct-blue">{opponent.name}</p> : null}
+    </div>
+    <div className="flex border-2">
+      <div className='flex-1 flex-wrap flex-start border-2'>
+        {
+          gameState ? (
+              gameState.moves.map((move, index, arr) => (
+                <div className='text-noct-blue flex justify-start' key={index}>
+                  <div>
+                  {index % 2 === 0 ? `${Math.floor(index / 2) + 1}. ${move}` : `${move}`}
+                  {index < arr.length - 1 ? ',  ' : ''}
+                  </div>
+                </div>
+              ))
+          ) : null
+        }
+      </div>
       <ChessBoard />
+      { (challenger && opponent) ? (
+          <div className="flex-1 flex flex-col">
+            <div className="flex-1 flex space-x-2 border-noct-blue border-2">
+              {challenger.color === 'white' ? challenger.grave.map(renderGravePiece) : opponent.grave.map(renderGravePiece)}
+            </div>
+            <div className="flex-1 flex space-x-2 border-2 border-noct-orange">
+              {challenger.color === 'black' ? challenger.grave.map(renderGravePiece) : opponent.grave.map(renderGravePiece)}
+            </div>
+          </div>
+        ) : null
+      }
+    </div>
+    <div className='flex justify-center mt-2'>
+      {challenger && opponent ? challenger.color === 'white' ? <p className="text-noct-blue">{challenger.name}</p> : <p className="text-noct-blue">{opponent.name}</p>: null}
+    </div>
     </>
   );
 };
 
 const ChessBoard: React.FC<{}> = () => {
-  const { challenger, opponent, gameState } = useContext(GameContext);
+  const { gameState } = useContext(GameContext);
   const chessBoard = [];
 
   for (let row_num = 0; row_num < 8; row_num++) {
@@ -104,18 +145,27 @@ const ChessBoard: React.FC<{}> = () => {
   }
 
   return (
-    <div className="chess-board">
-      {challenger && opponent ? challenger.color === 'black' ? <p className="noct-teal">{challenger.name} - {challenger.color}</p> : <p className="noct-teal">{opponent.name} - {opponent.color}</p> : null}
+    <div className='flex-1'> 
       {chessBoard}
-      {challenger && opponent ? challenger.color === 'white' ? <p className="noct-teal">{challenger.name} - {challenger.color}</p> : <p className="noct-teal">{opponent.name} - {opponent.color}</p>: null}
     </div>
   );
 }
 
 // Square component
 const Square: React.FC<{ position: string, squareColor: string }> = ({ position, squareColor }) => {
-  const { challenger, opponent, gameId, gameState, setChallenger, setOpponent, setGameState, sendMessage } = useContext(GameContext);
+  const { challenger, opponent, gameId, gameState, setChallenger, setOpponent, sendMessage } = useContext(GameContext);
   const { currentClientUsername } = useContext(AuthContext)
+
+  const convertMoveToAlgebraic = (piece: Piece, start: string, end: string, capture: boolean): string => {
+    // Convert the details of the move to algebraic notation
+    if (piece instanceof Pawn) {
+      let move = (capture ? 'x' : '') + end;
+      return move;
+    }
+    const firstLetter = piece.pieceName[1].toUpperCase();
+    let move = firstLetter + (capture ? 'x' : '') + end.toLowerCase();
+    return move;
+  }
 
   const process_move = (start: string, end: string): MoveResult => {
     let copyState = {...gameState as GameState};
@@ -129,10 +179,6 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
       // check if piece belongs to white, check the isWhite property of the piece to make sure it is a white piece white is dragging
       //against if it is white's turn to move. 
       if (piece) {
-        console.log('playercolor is white')
-        console.log(piece.isWhite)
-        console.log(copyState.isWhiteTurn)
-        console.log(piece.playerName)
         if (piece.isWhite !== copyState.isWhiteTurn) {
           return { isValid: false, newState: copyState, newChallenger: challenger, newOpponent: opponent };
         }
@@ -160,9 +206,11 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
           allMoves = piece.validKingMoves(grid, board, startCol, startRow);
       }
       
+      let didCapture = false;
       if (allMoves.includes(endPosition)) {
         // if the piece moving is taking an opponents piece
         if (board[endPosition][0] !== null) {
+          didCapture = true;
           const endSpotpiece = board[endPosition][0];
           // update the alive and grave list for player losing a piece
           if (endSpotpiece && challenger && opponent) {
@@ -174,6 +222,12 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
               opponent.alive = opponent.alive.filter(item => item !== endSpotpiece);
             }
           }
+        }
+
+
+        if (piece) {
+          const move = convertMoveToAlgebraic(piece, start, end, didCapture)
+          copyState.moves.push(move)
         }
     
         // update the positions of the pieces on the board
@@ -216,12 +270,20 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
         if (challenger && opponent) {
           const moveResult = process_move(start, end);
           if (moveResult.isValid) {
-            item.piece.moved = true;
-            const message = JSON.stringify({type: 'valid-move', pieceColor: item.piece.isWhite, playerName: item.piece.playerName, gameId: gameId, newGameState: moveResult.newState })
-            sendMessage(message)
             if (moveResult.newChallenger && moveResult.newOpponent) {
-              setChallenger(moveResult.newChallenger);
-              setOpponent(moveResult.newOpponent);
+              item.piece.moved = true;
+              const jsonNewChallenger = moveResult.newChallenger.toJSON();
+              const jsonNewOpponent = moveResult.newOpponent.toJSON();
+              const message = JSON.stringify({
+                type: 'valid-move', 
+                pieceColor: item.piece.isWhite, 
+                playerName: item.piece.playerName, 
+                gameId: gameId, 
+                newGameState: moveResult.newState, 
+                newChallenger: jsonNewChallenger, 
+                newOpponent: jsonNewOpponent 
+              })
+              sendMessage(message)
             }
           }
           else {

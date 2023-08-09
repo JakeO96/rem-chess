@@ -18,6 +18,7 @@ export interface GameState {
     [key: string]: [Piece | null, number];
   };
   isWhiteTurn: boolean;
+  moves: string[];
 }
 
 type GameContextType = {
@@ -56,7 +57,7 @@ type GameProviderProps = {
 
 const produceInitialGameState = () => {
   let cordCount = 0;
-  const newGameState: GameState = {board: {}, isWhiteTurn: true};
+  const newGameState: GameState = {board: {}, isWhiteTurn: true, moves: []};
   for (const col of grid) {
     for (const cord of col) {
       newGameState.board[cord] = [null, cordCount];

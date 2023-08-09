@@ -145,7 +145,12 @@ wss.on('connection', (ws: ExtendedWebSocket, req: ExtendedIncomingMessage) => {
       if (ws.username) {
         if (activeGames[data.gameId]) {
           const [challenger, opponent] = activeGames[data.gameId];
-          const newMessage = JSON.stringify({type: 'move-made', newGameState: data.newGameState})
+          const newMessage = JSON.stringify({
+            type: 'move-made', 
+            newGameState: data.newGameState, 
+            newChallenger: data.newChallenger, 
+            newOpponent: data.newOpponent
+          })
           const challengerClientSocket = activeConnections[challenger.name];
           const opponenetClientSocket = activeConnections[opponent.name];
           challengerClientSocket.send(newMessage);

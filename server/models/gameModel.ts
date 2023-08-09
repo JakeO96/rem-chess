@@ -1,15 +1,10 @@
 import mongoose, { Schema } from "mongoose";
 import { Document } from "mongoose";
 
-export interface IMove {
-  whiteMove: string;
-  blackMove: string;
-}
-
 export interface IGame extends Document {
   playerId: Schema.Types.ObjectId;
   opponentId: Schema.Types.ObjectId;
-  moves: IMove[];
+  moves: string[];
 }
 
 
@@ -26,7 +21,7 @@ const gameSchema = new mongoose.Schema(
       ref: "User",
     },
     moves: {
-      type: Object,
+      type: [String],
       required: [true],
     },
   }, 

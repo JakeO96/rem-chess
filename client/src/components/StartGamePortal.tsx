@@ -82,13 +82,7 @@ export const StartGamePortal: FC<StartGamePortalProps> = ({ expressApi }) => {
 
   const handleUsernameClick = (evt: React.MouseEvent<HTMLButtonElement>) => {
     const opponentUsername = evt.currentTarget.dataset.username;
-    console.log(`oppponentUsernae: ${opponentUsername}`)
-    console.log(`username: ${currentClientUsername}`)
     const [initializedChallenger, initializedOpponent] = opponentUsername ? initiatePlayers(currentClientUsername, opponentUsername) : [null, null]
-    console.log('initializeChallenger in handleUsernameClick vvvvvv')
-    console.log(initializedChallenger)
-    console.log('initializedOpponent in handleUsernameClick vvvvvv')
-    console.log(initializedOpponent)
     if (initializedChallenger && initializedOpponent) {
       const jsonChallenger = initializedChallenger.toJSON();
       const jsonOpponent = initializedOpponent.toJSON();

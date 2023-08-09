@@ -286,17 +286,17 @@ export const assignWhitePieces = (player: Player): void => {
   const playerColor = player.color;
   const pieceFactory = new PieceFactory();
   for (let col of grid) {
-    player.alive.push(pieceFactory.createPiece('Pawn', 'whitePawn', col[6], false, playerName, playerColor, true));
+    player.alive.push(pieceFactory.createPiece('Pawn', 'wPawn', col[6], false, playerName, playerColor, true));
   }
   player.alive.push(
-    pieceFactory.createPiece('Rook', 'whiteRook', grid[0][7], false, playerName, playerColor, true),
-    pieceFactory.createPiece('Knight', 'whiteKnight', grid[1][7], false, playerName, playerColor, true),
-    pieceFactory.createPiece('Bishop', 'whiteBishop', grid[2][7], false, playerName, playerColor, true),
-    pieceFactory.createPiece('Queen', 'whiteQueen', grid[3][7], false, playerName, playerColor, true),
-    pieceFactory.createPiece('King', 'whiteKing', grid[4][7], false, playerName, playerColor, true),
-    pieceFactory.createPiece('Bishop', 'whiteBishop', grid[5][7], false, playerName, playerColor, true),
-    pieceFactory.createPiece('Knight', 'whiteKnight', grid[6][7], false, playerName, playerColor, true),
-    pieceFactory.createPiece('Rook', 'whiteRook', grid[7][7], false, playerName, playerColor, true)
+    pieceFactory.createPiece('Rook', 'wRook', grid[0][7], false, playerName, playerColor, true),
+    pieceFactory.createPiece('Knight', 'wKnight', grid[1][7], false, playerName, playerColor, true),
+    pieceFactory.createPiece('Bishop', 'wBishop', grid[2][7], false, playerName, playerColor, true),
+    pieceFactory.createPiece('Queen', 'wQueen', grid[3][7], false, playerName, playerColor, true),
+    pieceFactory.createPiece('King', 'wKing', grid[4][7], false, playerName, playerColor, true),
+    pieceFactory.createPiece('Bishop', 'wBishop', grid[5][7], false, playerName, playerColor, true),
+    pieceFactory.createPiece('Knight', 'wKnight', grid[6][7], false, playerName, playerColor, true),
+    pieceFactory.createPiece('Rook', 'wRook', grid[7][7], false, playerName, playerColor, true)
   )
 }
 
@@ -305,16 +305,16 @@ export const assignBlackPieces = (player: Player): void => {
   const playerColor = player.color;
   const pieceFactory = new PieceFactory();
   for (let col of grid) {
-      player.alive.push(pieceFactory.createPiece('Pawn', 'blackPawn', col[1], false, playerName, playerColor, false));
+      player.alive.push(pieceFactory.createPiece('Pawn', 'bPawn', col[1], false, playerName, playerColor, false));
   }
   player.alive.push(
-    pieceFactory.createPiece('Rook','blackRook', grid[0][0], false, playerName, playerColor, false),
-    pieceFactory.createPiece('Knight', 'blackKnight', grid[1][0], false, playerName, playerColor, false),
-    pieceFactory.createPiece('Bishop', 'blackBishop', grid[2][0], false, playerName, playerColor, false),
-    pieceFactory.createPiece('Queen', 'blackQueen', grid[3][0], false, playerName, playerColor, false),
-    pieceFactory.createPiece('King', 'blackKing', grid[4][0], false, playerName, playerColor, false),
-    pieceFactory.createPiece('Bishop', 'blackBishop', grid[5][0], false, playerName, playerColor, false),
-    pieceFactory.createPiece('Knight', 'blackKnight', grid[6][0], false, playerName, playerColor, false),
-    pieceFactory.createPiece('Rook', 'blackRook', grid[7][0], false, playerName, playerColor, false)
+    pieceFactory.createPiece('Rook','bRook', grid[0][0], false, playerName, playerColor, false),
+    pieceFactory.createPiece('Knight', 'bKnight', grid[1][0], false, playerName, playerColor, false),
+    pieceFactory.createPiece('Bishop', 'bBishop', grid[2][0], false, playerName, playerColor, false),
+    pieceFactory.createPiece('Queen', 'bQueen', grid[3][0], false, playerName, playerColor, false),
+    pieceFactory.createPiece('King', 'bKing', grid[4][0], false, playerName, playerColor, false),
+    pieceFactory.createPiece('Bishop', 'bBishop', grid[5][0], false, playerName, playerColor, false),
+    pieceFactory.createPiece('Knight', 'bKnight', grid[6][0], false, playerName, playerColor, false),
+    pieceFactory.createPiece('Rook', 'bRook', grid[7][0], false, playerName, playerColor, false)
   );
 }
