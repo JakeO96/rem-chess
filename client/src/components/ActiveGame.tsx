@@ -80,8 +80,12 @@ export const ActiveGame: React.FC<{}> = () => {
     }
   }, [sendMessage, lastMessage, setGameState, setChallenger, setOpponent])
 
-  const renderGravePiece = (piece: Piece, index: number) => (
-    <div key={index} className="border-2 border-noct-teal">{svgIcons[piece.pieceName]}</div>
+  const renderBlackGravePiece = (piece: Piece, index: number) => (
+    <div key={index} className="flex items-end p-0 m-o h-auto">{svgIcons[piece.pieceName]}</div>
+  );
+
+  const renderWhiteGravePiece = (piece: Piece, index: number) => (
+    <div key={index} className="flex items-start p-0 m-o h-auto">{svgIcons[piece.pieceName]}</div>
   );
 
   return (
@@ -89,16 +93,14 @@ export const ActiveGame: React.FC<{}> = () => {
     <div className='flex justify-center mb-4'>
       {challenger && opponent ? challenger.color === 'black' ? <p className="text-noct-blue">{challenger.name}</p> : <p className="text-noct-blue">{opponent.name}</p> : null}
     </div>
-    <div className="flex border-2">
-      <div className='flex-1 flex-wrap flex-start border-2'>
+    <div className="flex">
+      <div className='flex-1 flex flex-wrap flex-start'>
         {
           gameState ? (
               gameState.moves.map((move, index, arr) => (
-                <div className='text-noct-blue flex justify-start' key={index}>
-                  <div>
+                <div className='text-noct-blue flex justify-start p-0 m-0 h-auto' key={index}>
                   {index % 2 === 0 ? `${Math.floor(index / 2) + 1}. ${move}` : `${move}`}
                   {index < arr.length - 1 ? ',  ' : ''}
-                  </div>
                 </div>
               ))
           ) : null
@@ -107,11 +109,11 @@ export const ActiveGame: React.FC<{}> = () => {
       <ChessBoard />
       { (challenger && opponent) ? (
           <div className="flex-1 flex flex-col">
-            <div className="flex-1 flex space-x-2 border-noct-blue border-2">
-              {challenger.color === 'white' ? challenger.grave.map(renderGravePiece) : opponent.grave.map(renderGravePiece)}
+            <div className="flex-1 flex space-x-2 flex-wrap">
+              {challenger.color === 'white' ? challenger.grave.map(renderWhiteGravePiece) : opponent.grave.map(renderWhiteGravePiece)}
             </div>
-            <div className="flex-1 flex space-x-2 border-2 border-noct-orange">
-              {challenger.color === 'black' ? challenger.grave.map(renderGravePiece) : opponent.grave.map(renderGravePiece)}
+            <div className="flex-1 flex space-x-2 flex-wrap ">
+              {challenger.color === 'black' ? challenger.grave.map(renderBlackGravePiece) : opponent.grave.map(renderBlackGravePiece)}
             </div>
           </div>
         ) : null
@@ -153,7 +155,7 @@ const ChessBoard: React.FC<{}> = () => {
 
 // Square component
 const Square: React.FC<{ position: string, squareColor: string }> = ({ position, squareColor }) => {
-  const { challenger, opponent, gameId, gameState, setChallenger, setOpponent, sendMessage } = useContext(GameContext);
+  const { challenger, opponent, gameId, gameState, sendMessage } = useContext(GameContext);
   const { currentClientUsername } = useContext(AuthContext)
 
   const convertMoveToAlgebraic = (piece: Piece, start: string, end: string, capture: boolean): string => {

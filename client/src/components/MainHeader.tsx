@@ -6,7 +6,7 @@ export const MainHeader: React.FC<{}> = () => {
   const { isLoggedIn, logOut } = useContext(AuthContext);
   return (
     <header>
-      <div className="relative bg-noct-black h-20">
+      <div className="relative bg-noct-gray h-20">
         <div className="sm:mx-20 ml-20">
           <div className="flex justify-between items-center py-5 h-20">
             <div className="flex justify-start lg:w-0 lg:flex-1">
