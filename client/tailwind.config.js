@@ -41,6 +41,7 @@ module.exports = {
     backgroundColor: {
       'black-square': '#66696B',
       'white-square': '#E7ECF1',
+      'graveyard': '#DEA956',
     },
     textColor: {
       'black-square': 'white',

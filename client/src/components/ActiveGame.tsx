@@ -95,50 +95,51 @@ export const ActiveGame: React.FC<{}> = () => {
     </div>
     <div className="flex">
       <div className='flex-1 flex flex-wrap justify-start'>
-        <div className='flex-1 flex-wrap w-full whitespace-pre overflow-y-auto max-h-[500px]'>
-          <div className='flex space-x-4'>
+        <div className='flex-1 flex flex-wrap justify-start overflow-y-auto h-[500px] ml-4 mr-14'> {/* Adjust the height as needed */}
+          <div className='flex space-x-4'> {/* Container for columns */}
             {
               gameState ? (
-                gameState.moves.reduce((acc, move, index, arr) => {
+                (() => {
                   const movesPerColumn = 10; // Number of moves in each column
-                  if (index % (2 * movesPerColumn) === 0) {
-                    // Start a new column
-                    acc.push(
-                      <div className='flex flex-col space-y-4' key={index / 2}> {/* Column */}
-                        <div className='text-noct-blue flex justify-start p-0 m-0'>
+                  const columns: JSX.Element[] = [];
+                  let currentColumn: JSX.Element[] = [];
+
+                  gameState.moves.forEach((move, index, arr) => {
+                    if (index % 2 === 0) {
+                      currentColumn.push(
+                        <div className='text-noct-blue flex justify-start p-0 m-0' key={index / 2}>
                           <p className='text-noct-teal'> { Math.floor(index / 2) + 1}. </p>
                           { move }
                           {index < arr.length - 1 ? ', ' : ''}
                           {arr[index + 1] ? arr[index + 1] : ''}
                         </div>
-                      </div>
-                    );
-                  } else if (index % 2 === 0) {
-                    // Add move to the existing column
-                    acc[acc.length - 1].props.children.push(
-                      <div className='text-noct-blue flex justify-start p-0 m-0'>
-                        <p className='text-noct-teal'> { Math.floor(index / 2) + 1}. </p>
-                        { move }
-                        {index < arr.length - 1 ? ', ' : ''}
-                        {arr[index + 1] ? arr[index + 1] : ''}
-                      </div>
-                    );
+                      );
+
+                      if (currentColumn.length === movesPerColumn) {
+                        columns.push(<div className='flex flex-col space-y-4' key={columns.length}>{currentColumn}</div>);
+                        currentColumn = [];
+                      }
+                    }
+                  });
+
+                  if (currentColumn.length > 0) {
+                    columns.push(<div className='flex flex-col space-y-4' key={columns.length}>{currentColumn}</div>);
                   }
-                  return acc;
-                }, [] as JSX.Element[])
+
+                  return columns;
+                })()
               ) : null
             }
           </div>
         </div>
-        <div className=' flex-1 border-2 border-noct-teal'></div>
       </div>
       <ChessBoard />
       { (challenger && opponent) ? (
           <div className="flex-1 flex flex-col">
-            <div className="flex-1 flex space-x-2 flex-wrap">
+            <div className="flex-1 flex space-x-2 flex-wrap bg-graveyard mb-40 ml-14">
               {challenger.color === 'white' ? challenger.grave.map(renderWhiteGravePiece) : opponent.grave.map(renderWhiteGravePiece)}
             </div>
-            <div className="flex-1 flex space-x-2 flex-wrap ">
+            <div className="flex-1 flex space-x-2 flex-wrap bg-graveyard mt-40 ml-14">
               {challenger.color === 'black' ? challenger.grave.map(renderBlackGravePiece) : opponent.grave.map(renderBlackGravePiece)}
             </div>
           </div>
