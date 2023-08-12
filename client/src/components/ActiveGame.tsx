@@ -85,7 +85,7 @@ export const ActiveGame: React.FC<{}> = () => {
   );
 
   const renderWhiteGravePiece = (piece: Piece, index: number) => (
-    <div key={index} className="flex items-start p-0 m-o h-auto">{svgIcons[piece.pieceName]}</div>
+    <div key={index} className="flex items-start p-0 m-o h-6 border-2 border-noct-teal">{svgIcons[piece.pieceName]}</div>
   );
 
   return (
@@ -94,17 +94,43 @@ export const ActiveGame: React.FC<{}> = () => {
       {challenger && opponent ? challenger.color === 'black' ? <p className="text-noct-blue">{challenger.name}</p> : <p className="text-noct-blue">{opponent.name}</p> : null}
     </div>
     <div className="flex">
-      <div className='flex-1 flex flex-wrap flex-start'>
-        {
-          gameState ? (
-              gameState.moves.map((move, index, arr) => (
-                <div className='text-noct-blue flex justify-start p-0 m-0 h-auto' key={index}>
-                  {index % 2 === 0 ? `${Math.floor(index / 2) + 1}. ${move}` : `${move}`}
-                  {index < arr.length - 1 ? ',  ' : ''}
-                </div>
-              ))
-          ) : null
-        }
+      <div className='flex-1 flex flex-wrap justify-start'>
+        <div className='flex-1 flex-wrap w-full whitespace-pre overflow-y-auto max-h-[500px]'>
+          <div className='flex space-x-4'>
+            {
+              gameState ? (
+                gameState.moves.reduce((acc, move, index, arr) => {
+                  const movesPerColumn = 10; // Number of moves in each column
+                  if (index % (2 * movesPerColumn) === 0) {
+                    // Start a new column
+                    acc.push(
+                      <div className='flex flex-col space-y-4' key={index / 2}> {/* Column */}
+                        <div className='text-noct-blue flex justify-start p-0 m-0'>
+                          <p className='text-noct-teal'> { Math.floor(index / 2) + 1}. </p>
+                          { move }
+                          {index < arr.length - 1 ? ', ' : ''}
+                          {arr[index + 1] ? arr[index + 1] : ''}
+                        </div>
+                      </div>
+                    );
+                  } else if (index % 2 === 0) {
+                    // Add move to the existing column
+                    acc[acc.length - 1].props.children.push(
+                      <div className='text-noct-blue flex justify-start p-0 m-0'>
+                        <p className='text-noct-teal'> { Math.floor(index / 2) + 1}. </p>
+                        { move }
+                        {index < arr.length - 1 ? ', ' : ''}
+                        {arr[index + 1] ? arr[index + 1] : ''}
+                      </div>
+                    );
+                  }
+                  return acc;
+                }, [] as JSX.Element[])
+              ) : null
+            }
+          </div>
+        </div>
+        <div className=' flex-1 border-2 border-noct-teal'></div>
       </div>
       <ChessBoard />
       { (challenger && opponent) ? (
@@ -166,7 +192,7 @@ const Square: React.FC<{ position: string, squareColor: string }> = ({ position,
     }
     const firstLetter = piece.pieceName[1].toUpperCase();
     let move = firstLetter + (capture ? 'x' : '') + end.toLowerCase();
-    return move;
+    return move.trim(); // Ensure no extra whitespace
   }
 
   const process_move = (start: string, end: string): MoveResult => {

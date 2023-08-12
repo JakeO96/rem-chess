@@ -3,6 +3,9 @@ module.exports = {
   content: ["./src/**/*.{html,js,ts,tsx}"],
   theme: {
     extend: {
+      whitespace: {
+        'pre': 'pre',
+      },
       boxShadow: {
         'in-around': 'inset 0 4px 12px 0 rgb(0 0 0 / 0.05)',
         'out-around': '0 4px 12px 0 rgb(0 0 0 / 0.05)'
