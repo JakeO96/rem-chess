@@ -1,4 +1,4 @@
-import { createContext, useState, ReactNode, useEffect, useContext, useCallback } from 'react';
+import { createContext, useState, ReactNode, useEffect, useContext } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { Player, assignBlackPieces, assignWhitePieces } from '../utils/game-utils';
 import { Piece, grid } from '../utils/game-utils';
